@@ -11,7 +11,7 @@ import { OrderRepository } from "./repositories/order.repository";
 import { authenticate, requireAdmin, type AuthRequest } from "./middleware/auth.middleware";
 import { insertUserSchema, insertProductSchema, insertDiscountCodeSchema } from "@shared/schema";
 import { AdminService } from "./services/admin.service";
-import { UserService } from "./services/user.service";
+import { UserService, updateProfileSchema, changePasswordSchema } from "./services/user.service";
 
 const userRepo = new UserRepository();
 const productRepo = new ProductRepository();
@@ -118,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/discount", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
       const data = insertDiscountCodeSchema.parse(req.body);
-      const code = await discountRepo.create(data);
+      const code = await discountService.createCode(data);
       res.status(201).json(code);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -127,24 +127,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/discount/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
-      const updated = await discountRepo.update(req.params.id, req.body);
-      if (!updated) {
-        return res.status(404).json({ error: "Discount code not found" });
-      }
+      const updated = await discountService.updateCode(req.params.id, req.body);
       res.json(updated);
     } catch (error: any) {
+      if (error.message === "Discount code not found") {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(400).json({ error: error.message });
     }
   });
 
   app.delete("/api/discount/:id", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
-      const deleted = await discountRepo.delete(req.params.id);
-      if (!deleted) {
-        return res.status(404).json({ error: "Discount code not found" });
-      }
+      await discountService.deleteCode(req.params.id);
       res.status(204).send();
     } catch (error: any) {
+      if (error.message === "Discount code not found") {
+        return res.status(404).json({ error: error.message });
+      }
       res.status(500).json({ error: error.message });
     }
   });
@@ -207,8 +207,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/user/profile", authenticate, async (req: AuthRequest, res) => {
     try {
-      const { name, email } = req.body;
-      const updated = await userService.updateProfile(req.user!.userId, { name, email });
+      const data = updateProfileSchema.parse(req.body);
+      const updated = await userService.updateProfile(req.user!.userId, data);
       res.json(updated);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -217,8 +217,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/user/password", authenticate, async (req: AuthRequest, res) => {
     try {
-      const { currentPassword, newPassword } = req.body;
-      await userService.changePassword(req.user!.userId, { currentPassword, newPassword });
+      const data = changePasswordSchema.parse(req.body);
+      await userService.changePassword(req.user!.userId, data);
       res.json({ message: "Password changed successfully" });
     } catch (error: any) {
       res.status(400).json({ error: error.message });

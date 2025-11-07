@@ -1,16 +1,22 @@
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 import { UserRepository } from "../repositories/user.repository";
 import type { User } from "@shared/schema";
 
-export interface UpdateProfileData {
-  name?: string;
-  email?: string;
-}
+export const updateProfileSchema = z.object({
+  name: z.string().min(1, "Name is required").optional(),
+  email: z.string().email("Invalid email format").optional(),
+}).refine(data => data.name !== undefined || data.email !== undefined, {
+  message: "At least one field must be provided",
+});
 
-export interface ChangePasswordData {
-  currentPassword: string;
-  newPassword: string;
-}
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+});
+
+export type UpdateProfileData = z.infer<typeof updateProfileSchema>;
+export type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 
 export class UserService {
   private userRepository: UserRepository;

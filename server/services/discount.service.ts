@@ -1,5 +1,5 @@
 import { DiscountRepository } from "../repositories/discount.repository";
-import type { DiscountCode } from "@shared/schema";
+import type { DiscountCode, InsertDiscountCode } from "@shared/schema";
 
 export class DiscountService {
   private discountRepository: DiscountRepository;
@@ -37,5 +37,24 @@ export class DiscountService {
 
   async getAllCodes(): Promise<DiscountCode[]> {
     return await this.discountRepository.findAll();
+  }
+
+  async createCode(data: InsertDiscountCode): Promise<DiscountCode> {
+    return await this.discountRepository.create(data);
+  }
+
+  async updateCode(id: string, data: Partial<InsertDiscountCode>): Promise<DiscountCode> {
+    const updated = await this.discountRepository.update(id, data);
+    if (!updated) {
+      throw new Error("Discount code not found");
+    }
+    return updated;
+  }
+
+  async deleteCode(id: string): Promise<void> {
+    const deleted = await this.discountRepository.delete(id);
+    if (!deleted) {
+      throw new Error("Discount code not found");
+    }
   }
 }
