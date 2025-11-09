@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import Header from "@/components/Header";
+import Navbar from "@/components/Navbar";
 import ProductDetail from "@/components/ProductDetail";
 import Footer from "@/components/Footer";
 import ShoppingCart from "@/components/ShoppingCart";
 import SearchDialog from "@/components/SearchDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { api } from "@/lib/api";
 import type { Product } from "@shared/schema";
 
@@ -22,8 +23,8 @@ export default function ProductPage() {
   const [, setLocation] = useLocation();
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [language, setLanguage] = useState<"FR" | "DE" | "EN">("FR");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { language } = useLanguage();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["/api/products", params?.id],
@@ -36,21 +37,15 @@ export default function ProductPage() {
     return null;
   }
 
+  const languageKey = language.charAt(0).toUpperCase() + language.slice(1);
   const getLocalizedData = (prod: Product) => ({
-    title: prod[`title${language}` as keyof Product] as string,
-    description: prod[`description${language}` as keyof Product] as string,
+    title: prod[`title${languageKey}` as keyof Product] as string,
+    description: prod[`description${languageKey}` as keyof Product] as string,
   });
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header
-        cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-        currentLanguage={language}
-        onLanguageChange={(lang) => setLanguage(lang as "FR" | "DE" | "EN")}
-        isAuthenticated={false}
-        onCartClick={() => setCartOpen(true)}
-        onSearchClick={() => setSearchOpen(true)}
-      />
+      <Navbar />
 
       <main className="flex-1 py-8">
         {isLoading ? (

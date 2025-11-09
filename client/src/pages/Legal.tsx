@@ -1,11 +1,11 @@
-import Header from "@/components/Header";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Legal() {
   return (
     <div className="min-h-screen flex flex-col">
-      <Header cartItemCount={0} currentLanguage="FR" isAuthenticated={false} />
+      <Navbar />
 
       <main className="flex-1 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">

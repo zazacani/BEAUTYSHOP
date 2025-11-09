@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Header from "@/components/Header";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ export default function Support() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header cartItemCount={0} currentLanguage="FR" isAuthenticated={false} />
+      <Navbar />
 
       <main className="flex-1 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">

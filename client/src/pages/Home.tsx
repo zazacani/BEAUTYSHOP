@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import Header from "@/components/Header";
+import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import ShoppingCart from "@/components/ShoppingCart";
 import SearchDialog from "@/components/SearchDialog";
 import heroImage from "@assets/generated_images/Hero_banner_beauty_image_87edf850.png";
-import { api } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Product } from "@shared/schema";
 
 interface ProductWithReviews extends Product {
@@ -28,8 +28,8 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [language, setLanguage] = useState<"FR" | "DE" | "EN">("FR");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { language, t } = useLanguage();
 
   const { data: products = [], isLoading } = useQuery<ProductWithReviews[]>({
     queryKey: ["/api/products"],
@@ -37,34 +37,27 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header
-        cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
-        currentLanguage={language}
-        onLanguageChange={(lang) => setLanguage(lang as "FR" | "DE" | "EN")}
-        isAuthenticated={false}
-        onCartClick={() => setCartOpen(true)}
-        onSearchClick={() => setSearchOpen(true)}
-      />
+      <Navbar />
 
       <main className="flex-1">
         <Hero
-          title="MUE"
-          subtitle="Découvrez notre collection de produits de beauté premium"
-          ctaText="Découvrir la collection"
+          title={t("home.title")}
+          subtitle={t("home.subtitle")}
+          ctaText={t("home.cta")}
           ctaLink="#products"
           backgroundImage={heroImage}
         />
 
         <div id="products" className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
           <h2 className="text-4xl font-serif font-bold mb-8 text-center">
-            Nos Produits
+            {t("products.title")}
           </h2>
           {isLoading ? (
-            <div className="text-center py-12">Chargement...</div>
+            <div className="text-center py-12">{t("common.loading")}</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product) => {
-                const titleKey = `title${language}` as keyof Product;
+                const titleKey = `title${language.charAt(0).toUpperCase() + language.slice(1)}` as keyof Product;
                 return (
                   <ProductCard
                     key={product.id}
