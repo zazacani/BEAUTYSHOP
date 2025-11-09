@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import multer from "multer";
+import path from "path";
 import { AuthService } from "./services/auth.service";
 import { ProductService } from "./services/product.service";
 import { DiscountService } from "./services/discount.service";
@@ -12,6 +14,32 @@ import { authenticate, requireAdmin, type AuthRequest } from "./middleware/auth.
 import { insertUserSchema, insertProductSchema, insertDiscountCodeSchema } from "@shared/schema";
 import { AdminService } from "./services/admin.service";
 import { UserService, updateProfileSchema, changePasswordSchema } from "./services/user.service";
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (_req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed"));
+    }
+  },
+});
 
 const userRepo = new UserRepository();
 const productRepo = new ProductRepository();
@@ -44,6 +72,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error: any) {
       res.status(401).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/upload", authenticate, requireAdmin, upload.single("image"), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      const fileUrl = `/uploads/${req.file.filename}`;
+      res.json({ url: fileUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 
