@@ -4,40 +4,58 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface RegisterFormProps {
-  onSubmit?: (name: string, email: string, password: string) => void;
+  onSubmit: (name: string, email: string, password: string) => void;
+  error?: string;
+  isLoading?: boolean;
 }
 
-export default function RegisterForm({ onSubmit }: RegisterFormProps) {
+export default function RegisterForm({ onSubmit, error, isLoading }: RegisterFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setPasswordError("");
+    
     if (password !== confirmPassword) {
-      console.log("Passwords don't match");
+      setPasswordError("Les mots de passe ne correspondent pas");
       return;
     }
-    onSubmit?.(name, email, password);
-    console.log("Register submitted:", { name, email, password });
+    onSubmit(name, email, password);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-serif">Créer un compte</CardTitle>
+          <CardTitle className="text-2xl font-serif" data-testid="text-register-title">
+            {t("auth.createAccount")}
+          </CardTitle>
           <CardDescription>
-            Rejoignez Beauté Suisse pour profiter d'offres exclusives
+            {t("home.title")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" data-testid="text-error">
+                {error}
+              </div>
+            )}
+            {passwordError && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" data-testid="text-password-error">
+                {passwordError}
+              </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="name">Nom complet</Label>
+              <Label htmlFor="name">{t("auth.name")}</Label>
               <Input
                 id="name"
                 type="text"
@@ -45,11 +63,12 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={isLoading}
                 data-testid="input-name"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -57,11 +76,12 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
                 data-testid="input-email"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -69,11 +89,12 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 data-testid="input-password"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+              <Label htmlFor="confirm-password">{t("auth.confirmPassword")}</Label>
               <Input
                 id="confirm-password"
                 type="password"
@@ -81,22 +102,24 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 data-testid="input-confirm-password"
               />
             </div>
             <Button
               type="submit"
               className="w-full"
+              disabled={isLoading}
               data-testid="button-submit-register"
             >
-              S'inscrire
+              {isLoading ? t("common.loading") : t("auth.signUp")}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Déjà un compte ? </span>
+            <span className="text-muted-foreground">{t("auth.hasAccount")} </span>
             <Link href="/login">
               <span className="text-primary hover:underline cursor-pointer" data-testid="link-login">
-                Se connecter
+                {t("auth.login")}
               </span>
             </Link>
           </div>

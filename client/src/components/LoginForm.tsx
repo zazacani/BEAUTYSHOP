@@ -4,35 +4,44 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LoginFormProps {
-  onSubmit?: (email: string, password: string) => void;
-  onForgotPassword?: () => void;
+  onSubmit: (email: string, password: string) => void;
+  error?: string;
+  isLoading?: boolean;
 }
 
-export default function LoginForm({ onSubmit, onForgotPassword }: LoginFormProps) {
+export default function LoginForm({ onSubmit, error, isLoading }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit?.(email, password);
-    console.log("Login submitted:", { email, password });
+    onSubmit(email, password);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-serif">Connexion</CardTitle>
+          <CardTitle className="text-2xl font-serif" data-testid="text-login-title">
+            {t("auth.login")}
+          </CardTitle>
           <CardDescription>
-            Connectez-vous à votre compte Beauté Suisse
+            {t("home.title")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" data-testid="text-error">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -40,11 +49,12 @@ export default function LoginForm({ onSubmit, onForgotPassword }: LoginFormProps
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
                 data-testid="input-email"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -52,33 +62,24 @@ export default function LoginForm({ onSubmit, onForgotPassword }: LoginFormProps
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 data-testid="input-password"
               />
             </div>
-            <button
-              type="button"
-              className="text-sm text-primary hover:underline"
-              onClick={() => {
-                onForgotPassword?.();
-                console.log("Forgot password clicked");
-              }}
-              data-testid="button-forgot-password"
-            >
-              Mot de passe oublié ?
-            </button>
             <Button
               type="submit"
               className="w-full"
+              disabled={isLoading}
               data-testid="button-submit-login"
             >
-              Se connecter
+              {isLoading ? t("common.loading") : t("auth.signIn")}
             </Button>
           </form>
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Pas encore de compte ? </span>
+            <span className="text-muted-foreground">{t("auth.noAccount")} </span>
             <Link href="/register">
               <span className="text-primary hover:underline cursor-pointer" data-testid="link-register">
-                S'inscrire
+                {t("auth.register")}
               </span>
             </Link>
           </div>
