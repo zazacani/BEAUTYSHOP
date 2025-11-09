@@ -95,4 +95,27 @@ export class OrderService {
   async getOrderById(orderId: string): Promise<Order | undefined> {
     return await this.orderRepository.findById(orderId);
   }
+
+  async getAllOrders(): Promise<(Order & { userName: string; userEmail: string })[]> {
+    return await this.orderRepository.findAllWithUserInfo();
+  }
+
+  async updateOrderStatus(orderId: string, status: string, trackingNumber?: string): Promise<Order> {
+    const order = await this.orderRepository.findById(orderId);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    const validStatuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
+    if (!validStatuses.includes(status)) {
+      throw new Error("Invalid status");
+    }
+
+    const updated = await this.orderRepository.updateStatus(orderId, status, trackingNumber);
+    if (!updated) {
+      throw new Error("Failed to update order");
+    }
+
+    return updated;
+  }
 }

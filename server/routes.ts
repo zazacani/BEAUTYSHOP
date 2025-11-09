@@ -209,8 +209,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders", authenticate, async (req: AuthRequest, res) => {
     try {
-      const orders = await orderService.getUserOrders(req.user!.userId);
-      res.json(orders);
+      if (req.user!.role === "ADMIN") {
+        const orders = await orderService.getAllOrders();
+        res.json(orders);
+      } else {
+        const orders = await orderService.getUserOrders(req.user!.userId);
+        res.json(orders);
+      }
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -228,6 +233,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(order);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/orders/:id/status", authenticate, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { status, trackingNumber } = req.body;
+      const order = await orderService.updateOrderStatus(req.params.id, status, trackingNumber);
+      res.json(order);
+    } catch (error: any) {
+      if (error.message === "Order not found") {
+        return res.status(404).json({ error: error.message });
+      }
+      res.status(400).json({ error: error.message });
     }
   });
 
