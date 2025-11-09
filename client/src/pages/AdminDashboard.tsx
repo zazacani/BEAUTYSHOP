@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -23,8 +23,13 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 
+  useEffect(() => {
+    if (!user || !isAdmin) {
+      setLocation("/");
+    }
+  }, [user, isAdmin, setLocation]);
+
   if (!user || !isAdmin) {
-    setLocation("/");
     return null;
   }
 
