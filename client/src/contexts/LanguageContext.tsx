@@ -212,16 +212,15 @@ const translations = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem("language");
-    return (saved as Language) || "fr";
-  });
+  const [language, setLanguageState] = useState<Language>("fr");
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const initializeLanguage = async () => {
       const saved = localStorage.getItem("language");
-      if (!saved) {
+      if (saved) {
+        setLanguageState(saved as Language);
+      } else {
         try {
           const response = await fetch("/api/settings");
           if (response.ok) {
