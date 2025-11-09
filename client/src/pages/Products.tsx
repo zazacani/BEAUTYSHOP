@@ -4,15 +4,20 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search } from "lucide-react";
+import { Search, Star } from "lucide-react";
 import type { Product } from "@shared/schema";
 import Navbar from "@/components/Navbar";
+
+interface ProductWithReviews extends Product {
+  ratingAverage: number;
+  ratingCount: number;
+}
 
 export default function Products() {
   const [searchQuery, setSearchQuery] = useState("");
   const { t, language } = useLanguage();
 
-  const { data: products, isLoading } = useQuery<Product[]>({
+  const { data: products, isLoading } = useQuery<ProductWithReviews[]>({
     queryKey: ["/api/products"],
   });
 
@@ -75,19 +80,26 @@ export default function Products() {
                     />
                   </CardHeader>
                   <CardContent className="flex-1 p-6">
-                    <CardTitle className="mb-2" data-testid={`text-product-title-${product.id}`}>
+                    <CardTitle className="mb-2 font-bold" data-testid={`text-product-title-${product.id}`}>
                       {product[titleKey] as string}
                     </CardTitle>
-                    <CardDescription className="line-clamp-3" data-testid={`text-product-desc-${product.id}`}>
+                    <CardDescription className="line-clamp-2 mb-4" data-testid={`text-product-desc-${product.id}`}>
                       {product[descKey] as string}
                     </CardDescription>
-                    <div className="mt-4">
+                    <div className="space-y-2">
                       <p className="text-2xl font-bold" data-testid={`text-product-price-${product.id}`}>
                         CHF {product.price}
                       </p>
-                      <p className={`text-sm ${product.quantityInStock > 0 ? "text-green-600" : "text-destructive"}`} data-testid={`text-product-stock-${product.id}`}>
-                        {product.quantityInStock > 0 ? t("products.stock") : t("products.outOfStock")}
-                      </p>
+                      <div className="flex items-center gap-1" data-testid={`text-product-rating-${product.id}`}>
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        {product.ratingCount > 0 ? (
+                          <span className="text-sm">
+                            {product.ratingAverage.toFixed(1)} ({product.ratingCount} {product.ratingCount === 1 ? t("products.review") : t("products.reviews")})
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">{t("products.noReviews")}</span>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                   <CardFooter className="p-6 pt-0">

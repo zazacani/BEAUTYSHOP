@@ -1,4 +1,4 @@
-import { ProductRepository } from "../repositories/product.repository";
+import { ProductRepository, type ProductWithReviews } from "../repositories/product.repository";
 import type { Product, InsertProduct } from "@shared/schema";
 
 export class ProductService {
@@ -8,7 +8,7 @@ export class ProductService {
     this.productRepository = productRepository;
   }
 
-  async getAllProducts(): Promise<Product[]> {
+  async getAllProducts(): Promise<ProductWithReviews[]> {
     return await this.productRepository.findAll();
   }
 
@@ -20,7 +20,7 @@ export class ProductService {
     return product;
   }
 
-  async searchProducts(query: string): Promise<Product[]> {
+  async searchProducts(query: string): Promise<ProductWithReviews[]> {
     return await this.productRepository.search(query);
   }
 

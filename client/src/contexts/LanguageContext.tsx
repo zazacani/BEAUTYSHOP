@@ -45,6 +45,9 @@ const translations = {
     "products.stock": "En stock",
     "products.outOfStock": "Rupture de stock",
     "products.addToCart": "Ajouter au panier",
+    "products.review": "avis",
+    "products.reviews": "avis",
+    "products.noReviews": "Aucun avis",
     
     // Admin
     "admin.dashboard": "Tableau de bord",
@@ -100,6 +103,9 @@ const translations = {
     "products.stock": "Auf Lager",
     "products.outOfStock": "Ausverkauft",
     "products.addToCart": "In den Warenkorb",
+    "products.review": "Bewertung",
+    "products.reviews": "Bewertungen",
+    "products.noReviews": "Keine Bewertungen",
     
     // Admin
     "admin.dashboard": "Dashboard",
@@ -155,6 +161,9 @@ const translations = {
     "products.stock": "In stock",
     "products.outOfStock": "Out of stock",
     "products.addToCart": "Add to cart",
+    "products.review": "review",
+    "products.reviews": "reviews",
+    "products.noReviews": "No reviews",
     
     // Admin
     "admin.dashboard": "Dashboard",

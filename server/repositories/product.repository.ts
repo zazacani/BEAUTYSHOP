@@ -1,6 +1,11 @@
 import { db } from "../db";
-import { products, type Product, type InsertProduct } from "@shared/schema";
-import { eq, or, ilike, sql } from "drizzle-orm";
+import { products, reviews, type Product, type InsertProduct } from "@shared/schema";
+import { eq, or, ilike, sql, avg, count } from "drizzle-orm";
+
+export interface ProductWithReviews extends Product {
+  ratingAverage: number;
+  ratingCount: number;
+}
 
 export class ProductRepository {
   async create(data: InsertProduct): Promise<Product> {
@@ -8,10 +13,37 @@ export class ProductRepository {
     return product;
   }
 
-  async findAll(): Promise<Product[]> {
-    return await db.query.products.findMany({
-      orderBy: (products, { desc }) => [desc(products.createdAt)],
-    });
+  async findAll(): Promise<ProductWithReviews[]> {
+    const result = await db
+      .select({
+        id: products.id,
+        titleFr: products.titleFr,
+        titleDe: products.titleDe,
+        titleEn: products.titleEn,
+        descriptionFr: products.descriptionFr,
+        descriptionDe: products.descriptionDe,
+        descriptionEn: products.descriptionEn,
+        price: products.price,
+        quantityInStock: products.quantityInStock,
+        imageUrl1: products.imageUrl1,
+        imageUrl2: products.imageUrl2,
+        altTextFr: products.altTextFr,
+        altTextDe: products.altTextDe,
+        altTextEn: products.altTextEn,
+        createdAt: products.createdAt,
+        ratingAverage: sql<number>`COALESCE(ROUND(AVG(${reviews.rating})::numeric, 1), 0)`,
+        ratingCount: sql<number>`COALESCE(COUNT(${reviews.id}), 0)`,
+      })
+      .from(products)
+      .leftJoin(reviews, eq(reviews.productId, products.id))
+      .groupBy(products.id)
+      .orderBy(sql`${products.createdAt} DESC`);
+
+    return result.map((row) => ({
+      ...row,
+      ratingAverage: Number(row.ratingAverage),
+      ratingCount: Number(row.ratingCount),
+    }));
   }
 
   async findById(id: string): Promise<Product | undefined> {
@@ -20,18 +52,47 @@ export class ProductRepository {
     });
   }
 
-  async search(query: string): Promise<Product[]> {
+  async search(query: string): Promise<ProductWithReviews[]> {
     const searchTerm = `%${query}%`;
-    return await db.query.products.findMany({
-      where: or(
-        ilike(products.titleFr, searchTerm),
-        ilike(products.titleDe, searchTerm),
-        ilike(products.titleEn, searchTerm),
-        ilike(products.descriptionFr, searchTerm),
-        ilike(products.descriptionDe, searchTerm),
-        ilike(products.descriptionEn, searchTerm)
-      ),
-    });
+    const result = await db
+      .select({
+        id: products.id,
+        titleFr: products.titleFr,
+        titleDe: products.titleDe,
+        titleEn: products.titleEn,
+        descriptionFr: products.descriptionFr,
+        descriptionDe: products.descriptionDe,
+        descriptionEn: products.descriptionEn,
+        price: products.price,
+        quantityInStock: products.quantityInStock,
+        imageUrl1: products.imageUrl1,
+        imageUrl2: products.imageUrl2,
+        altTextFr: products.altTextFr,
+        altTextDe: products.altTextDe,
+        altTextEn: products.altTextEn,
+        createdAt: products.createdAt,
+        ratingAverage: sql<number>`COALESCE(ROUND(AVG(${reviews.rating})::numeric, 1), 0)`,
+        ratingCount: sql<number>`COALESCE(COUNT(${reviews.id}), 0)`,
+      })
+      .from(products)
+      .leftJoin(reviews, eq(reviews.productId, products.id))
+      .where(
+        or(
+          ilike(products.titleFr, searchTerm),
+          ilike(products.titleDe, searchTerm),
+          ilike(products.titleEn, searchTerm),
+          ilike(products.descriptionFr, searchTerm),
+          ilike(products.descriptionDe, searchTerm),
+          ilike(products.descriptionEn, searchTerm)
+        )
+      )
+      .groupBy(products.id);
+
+    return result.map((row) => ({
+      ...row,
+      ratingAverage: Number(row.ratingAverage),
+      ratingCount: Number(row.ratingCount),
+    }));
   }
 
   async update(id: string, data: Partial<InsertProduct>): Promise<Product | undefined> {
