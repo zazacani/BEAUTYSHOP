@@ -55,6 +55,9 @@ export default function AdminDashboard() {
               <Users className="w-4 h-4 mr-2" />
               {t("admin.stats")}
             </TabsTrigger>
+            <TabsTrigger value="settings" data-testid="tab-settings">
+              {t("admin.settings")}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">
@@ -67,6 +70,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="stats">
             <StatsTab />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <SettingsTab />
           </TabsContent>
         </Tabs>
       </div>
@@ -525,6 +532,95 @@ function StatsTab() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">CHF {stats?.totalRevenue || 0}</div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+interface SiteSettings {
+  id: string;
+  defaultLanguage: string;
+  updatedAt: string;
+}
+
+function SettingsTab() {
+  const { t } = useLanguage();
+  const { toast } = useToast();
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+
+  const { data: settings, isLoading } = useQuery<SiteSettings>({
+    queryKey: ["/api/settings"],
+  });
+
+  useEffect(() => {
+    if (settings) {
+      setSelectedLanguage(settings.defaultLanguage);
+    }
+  }, [settings]);
+
+  const updateSettings = useMutation({
+    mutationFn: async (defaultLanguage: string) => {
+      return await apiRequest("PUT", "/api/settings", { defaultLanguage });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      toast({ 
+        title: t("admin.settingsUpdated") || "Paramètres mis à jour avec succès",
+        description: t("admin.settingsUpdatedDesc") || "La langue par défaut du site a été modifiée"
+      });
+    },
+    onError: () => {
+      toast({ 
+        title: t("common.error") || "Erreur",
+        description: t("admin.settingsUpdateError") || "Impossible de mettre à jour les paramètres",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleSave = () => {
+    if (selectedLanguage) {
+      updateSettings.mutate(selectedLanguage);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="text-center py-12">{t("common.loading")}</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("admin.siteSettings")}</CardTitle>
+          <CardDescription>{t("admin.siteSettingsDesc")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="default-language">{t("admin.defaultLanguage")}</Label>
+            <select
+              id="default-language"
+              value={selectedLanguage}
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              className="w-full p-2 border rounded-md bg-background"
+              data-testid="select-default-language"
+            >
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="en">English</option>
+            </select>
+            <p className="text-sm text-muted-foreground">
+              {t("admin.defaultLanguageDesc")}
+            </p>
+          </div>
+          <Button 
+            onClick={handleSave}
+            disabled={updateSettings.isPending || selectedLanguage === settings?.defaultLanguage}
+            data-testid="button-save-settings"
+          >
+            {updateSettings.isPending ? t("common.loading") : t("common.save")}
+          </Button>
         </CardContent>
       </Card>
     </div>
