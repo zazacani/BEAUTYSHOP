@@ -220,20 +220,22 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem("language");
       if (saved) {
         setLanguageState(saved as Language);
+        setIsInitialized(true);
       } else {
         try {
           const response = await fetch("/api/settings");
           if (response.ok) {
             const settings = await response.json();
-            if (settings.defaultLanguage) {
-              setLanguageState(settings.defaultLanguage as Language);
-            }
+            const defaultLang = settings.defaultLanguage as Language || "fr";
+            setLanguageState(defaultLang);
+            localStorage.setItem("language", defaultLang);
           }
         } catch (error) {
           console.error("Failed to fetch default language:", error);
+        } finally {
+          setIsInitialized(true);
         }
       }
-      setIsInitialized(true);
     };
 
     initializeLanguage();
