@@ -216,12 +216,38 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem("language");
     return (saved as Language) || "fr";
   });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("language", language);
-  }, [language]);
+    const initializeLanguage = async () => {
+      const saved = localStorage.getItem("language");
+      if (!saved) {
+        try {
+          const response = await fetch("/api/settings");
+          if (response.ok) {
+            const settings = await response.json();
+            if (settings.defaultLanguage) {
+              setLanguageState(settings.defaultLanguage as Language);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch default language:", error);
+        }
+      }
+      setIsInitialized(true);
+    };
+
+    initializeLanguage();
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("language", language);
+    }
+  }, [language, isInitialized]);
 
   const setLanguage = (lang: Language) => {
+    console.log("Language changed to", lang.toUpperCase());
     setLanguageState(lang);
   };
 
