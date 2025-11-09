@@ -127,6 +127,17 @@ const translations = {
     "cart.discountCode": "Code de réduction",
     "cart.apply": "Appliquer",
     "cart.checkout": "Passer la commande",
+    
+    // Footer
+    "footer.tagline": "Votre destination pour les produits de beauté premium en Suisse",
+    "footer.quickLinks": "Liens Rapides",
+    "footer.products": "Produits",
+    "footer.support": "Support",
+    "footer.legal": "Mentions Légales",
+    "footer.contact": "Contact",
+    "footer.email": "Email",
+    "footer.phone": "Téléphone",
+    "footer.copyright": "Tous droits réservés.",
   },
   de: {
     // Navigation
@@ -246,6 +257,17 @@ const translations = {
     "cart.discountCode": "Rabattcode",
     "cart.apply": "Anwenden",
     "cart.checkout": "Zur Kasse",
+    
+    // Footer
+    "footer.tagline": "Ihr Ziel für Premium-Schönheitsprodukte in der Schweiz",
+    "footer.quickLinks": "Schnelllinks",
+    "footer.products": "Produkte",
+    "footer.support": "Support",
+    "footer.legal": "Impressum",
+    "footer.contact": "Kontakt",
+    "footer.email": "E-Mail",
+    "footer.phone": "Telefon",
+    "footer.copyright": "Alle Rechte vorbehalten.",
   },
   en: {
     // Navigation
@@ -365,6 +387,17 @@ const translations = {
     "cart.discountCode": "Discount code",
     "cart.apply": "Apply",
     "cart.checkout": "Checkout",
+    
+    // Footer
+    "footer.tagline": "Your destination for premium beauty products in Switzerland",
+    "footer.quickLinks": "Quick Links",
+    "footer.products": "Products",
+    "footer.support": "Support",
+    "footer.legal": "Legal Notice",
+    "footer.contact": "Contact",
+    "footer.email": "Email",
+    "footer.phone": "Phone",
+    "footer.copyright": "All rights reserved.",
   },
 };
 
