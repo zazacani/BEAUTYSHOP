@@ -179,6 +179,7 @@ function ProductsTab() {
 function ProductForm({ product, onSuccess }: { product?: Product | null; onSuccess: () => void }) {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     titleFr: product?.titleFr || "",
     titleDe: product?.titleDe || "",
@@ -194,6 +195,36 @@ function ProductForm({ product, onSuccess }: { product?: Product | null; onSucce
     altTextDe: product?.altTextDe || "",
     altTextEn: product?.altTextEn || "",
   });
+
+  const handleImageUpload = async (file: File, imageNumber: 1 | 2) => {
+    setUploading(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("image", file);
+
+      const token = localStorage.getItem("token");
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataUpload,
+      });
+
+      if (!response.ok) {
+        throw new Error("Échec de l'upload");
+      }
+
+      const data = await response.json();
+      const field = imageNumber === 1 ? "imageUrl1" : "imageUrl2";
+      setFormData(prev => ({ ...prev, [field]: data.url }));
+      toast({ title: `Image ${imageNumber} téléchargée avec succès` });
+    } catch (error: any) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -320,28 +351,58 @@ function ProductForm({ product, onSuccess }: { product?: Product | null; onSucce
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="image1">Image URL 1 (principale)</Label>
-            <Input
-              id="image1"
-              type="url"
-              value={formData.imageUrl1}
-              onChange={(e) => setFormData({ ...formData, imageUrl1: e.target.value })}
-              required
-              data-testid="input-image1"
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="image1">Image 1 (principale)</Label>
+              <div className="space-y-2">
+                <Input
+                  id="image1"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file, 1);
+                  }}
+                  disabled={uploading}
+                  data-testid="input-image1"
+                />
+                {formData.imageUrl1 && (
+                  <div className="relative w-full h-40 border rounded-md overflow-hidden">
+                    <img
+                      src={formData.imageUrl1}
+                      alt="Prévisualisation 1"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="image2">Image URL 2 (au survol)</Label>
-            <Input
-              id="image2"
-              type="url"
-              value={formData.imageUrl2}
-              onChange={(e) => setFormData({ ...formData, imageUrl2: e.target.value })}
-              required
-              data-testid="input-image2"
-            />
+            <div className="space-y-2">
+              <Label htmlFor="image2">Image 2 (au survol)</Label>
+              <div className="space-y-2">
+                <Input
+                  id="image2"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload(file, 2);
+                  }}
+                  disabled={uploading}
+                  data-testid="input-image2"
+                />
+                {formData.imageUrl2 && (
+                  <div className="relative w-full h-40 border rounded-md overflow-hidden">
+                    <img
+                      src={formData.imageUrl2}
+                      alt="Prévisualisation 2"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
