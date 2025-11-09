@@ -3,13 +3,18 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import ProductGrid from "@/components/ProductGrid";
+import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import ShoppingCart from "@/components/ShoppingCart";
 import SearchDialog from "@/components/SearchDialog";
 import heroImage from "@assets/generated_images/Hero_banner_beauty_image_87edf850.png";
 import { api } from "@/lib/api";
 import type { Product } from "@shared/schema";
+
+interface ProductWithReviews extends Product {
+  ratingAverage: number;
+  ratingCount: number;
+}
 
 interface CartItem {
   id: string;
@@ -26,20 +31,9 @@ export default function Home() {
   const [language, setLanguage] = useState<"FR" | "DE" | "EN">("FR");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery<ProductWithReviews[]>({
     queryKey: ["/api/products"],
-    queryFn: api.products.getAll,
   });
-
-  const getLocalizedProduct = (product: Product) => {
-    return {
-      id: product.id,
-      title: product[`title${language}` as keyof Product] as string,
-      price: parseFloat(product.price),
-      image1: product.imageUrl1,
-      image2: product.imageUrl2,
-    };
-  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -68,37 +62,41 @@ export default function Home() {
           {isLoading ? (
             <div className="text-center py-12">Chargement...</div>
           ) : (
-            <ProductGrid
-              products={products.map(getLocalizedProduct)}
-              onAddToCart={(id) => {
-                const product = products.find((p) => p.id === id);
-                if (product) {
-                  const localized = getLocalizedProduct(product);
-                  setCartItems((prev) => {
-                    const existing = prev.find((item) => item.id === id);
-                    if (existing) {
-                      return prev.map((item) =>
-                        item.id === id
-                          ? { ...item, quantity: item.quantity + 1 }
-                          : item
-                      );
-                    }
-                    return [
-                      ...prev,
-                      {
-                        id: localized.id,
-                        title: localized.title,
-                        price: localized.price,
-                        quantity: 1,
-                        image: localized.image1,
-                      },
-                    ];
-                  });
-                  console.log(`Added product ${id} to cart`);
-                }
-              }}
-              onProductClick={(id) => setLocation(`/product/${id}`)}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => {
+                const titleKey = `title${language}` as keyof Product;
+                return (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={() => {
+                      setCartItems((prev) => {
+                        const existing = prev.find((item) => item.id === product.id);
+                        if (existing) {
+                          return prev.map((item) =>
+                            item.id === product.id
+                              ? { ...item, quantity: item.quantity + 1 }
+                              : item
+                          );
+                        }
+                        return [
+                          ...prev,
+                          {
+                            id: product.id,
+                            title: product[titleKey] as string,
+                            price: parseFloat(product.price),
+                            quantity: 1,
+                            image: product.imageUrl1,
+                          },
+                        ];
+                      });
+                      console.log(`Added product ${product.id} to cart`);
+                    }}
+                    onClick={() => setLocation(`/product/${product.id}`)}
+                  />
+                );
+              })}
+            </div>
           )}
         </div>
       </main>
@@ -126,12 +124,12 @@ export default function Home() {
         onClose={() => setSearchOpen(false)}
         onSearch={(query) => console.log("Search:", query)}
         results={products.slice(0, 3).map((p) => {
-          const localized = getLocalizedProduct(p);
+          const titleKey = `title${language}` as keyof Product;
           return {
-            id: localized.id,
-            title: localized.title,
-            price: localized.price,
-            image: localized.image1,
+            id: p.id,
+            title: p[titleKey] as string,
+            price: parseFloat(p.price),
+            image: p.imageUrl1,
           };
         })}
         onResultClick={(id) => {
