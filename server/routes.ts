@@ -6,12 +6,14 @@ import { AuthService } from "./services/auth.service";
 import { ProductService } from "./services/product.service";
 import { DiscountService } from "./services/discount.service";
 import { OrderService } from "./services/order.service";
+import { SettingsService } from "./services/settings.service";
 import { UserRepository } from "./repositories/user.repository";
 import { ProductRepository } from "./repositories/product.repository";
 import { DiscountRepository } from "./repositories/discount.repository";
 import { OrderRepository } from "./repositories/order.repository";
+import { SettingsRepository } from "./repositories/settings.repository";
 import { authenticate, requireAdmin, type AuthRequest } from "./middleware/auth.middleware";
-import { insertUserSchema, insertProductSchema, insertDiscountCodeSchema } from "@shared/schema";
+import { insertUserSchema, insertProductSchema, insertDiscountCodeSchema, insertSiteSettingsSchema } from "@shared/schema";
 import { AdminService } from "./services/admin.service";
 import { UserService, updateProfileSchema, changePasswordSchema } from "./services/user.service";
 
@@ -45,6 +47,7 @@ const userRepo = new UserRepository();
 const productRepo = new ProductRepository();
 const discountRepo = new DiscountRepository();
 const orderRepo = new OrderRepository();
+const settingsRepo = new SettingsRepository();
 
 const authService = new AuthService(userRepo);
 const productService = new ProductService(productRepo);
@@ -52,6 +55,7 @@ const discountService = new DiscountService(discountRepo);
 const orderService = new OrderService(orderRepo, productRepo, discountService);
 const adminService = new AdminService();
 const userService = new UserService(userRepo);
+const settingsService = new SettingsService(settingsRepo);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -260,6 +264,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const data = changePasswordSchema.parse(req.body);
       await userService.changePassword(req.user!.userId, data);
       res.json({ message: "Password changed successfully" });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/settings", async (_req, res) => {
+    try {
+      const settings = await settingsService.getSettings();
+      res.json(settings);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/settings", authenticate, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const data = insertSiteSettingsSchema.parse(req.body);
+      const updated = await settingsService.updateSettings(data);
+      res.json(updated);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
