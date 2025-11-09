@@ -4,27 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import ProductDetail from "@/components/ProductDetail";
 import Footer from "@/components/Footer";
-import ShoppingCart from "@/components/ShoppingCart";
 import SearchDialog from "@/components/SearchDialog";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCart } from "@/contexts/CartContext";
 import { api } from "@/lib/api";
 import type { Product } from "@shared/schema";
-
-interface CartItem {
-  id: string;
-  title: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
 
 export default function ProductPage() {
   const [match, params] = useRoute("/product/:id");
   const [, setLocation] = useLocation();
-  const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { language } = useLanguage();
+  const { addToCart, updateQuantity, cartItems } = useCart();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["/api/products", params?.id],
@@ -60,27 +51,12 @@ export default function ProductPage() {
             deliveryEstimate="2-3 jours ouvrables"
             onAddToCart={(quantity) => {
               const localized = getLocalizedData(product);
-              setCartItems((prev) => {
-                const existing = prev.find((item) => item.id === product.id);
-                if (existing) {
-                  return prev.map((item) =>
-                    item.id === product.id
-                      ? { ...item, quantity: item.quantity + quantity }
-                      : item
-                  );
-                }
-                return [
-                  ...prev,
-                  {
-                    id: product.id,
-                    title: localized.title,
-                    price: parseFloat(product.price),
-                    quantity,
-                    image: product.imageUrl1,
-                  },
-                ];
-              });
-              setCartOpen(true);
+              addToCart({
+                id: product.id,
+                title: localized.title,
+                price: parseFloat(product.price),
+                image: product.imageUrl1,
+              }, quantity);
               console.log(`Added ${quantity} items to cart`);
             }}
           />
@@ -90,22 +66,6 @@ export default function ProductPage() {
       </main>
 
       <Footer />
-
-      <ShoppingCart
-        isOpen={cartOpen}
-        onClose={() => setCartOpen(false)}
-        items={cartItems}
-        onUpdateQuantity={(id, quantity) => {
-          setCartItems((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-          );
-        }}
-        onRemoveItem={(id) => {
-          setCartItems((prev) => prev.filter((item) => item.id !== id));
-        }}
-        onApplyDiscount={(code) => console.log(`Discount code: ${code}`)}
-        onCheckout={() => setLocation("/checkout")}
-      />
 
       <SearchDialog
         isOpen={searchOpen}

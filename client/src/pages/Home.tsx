@@ -5,10 +5,10 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
-import ShoppingCart from "@/components/ShoppingCart";
 import SearchDialog from "@/components/SearchDialog";
 import heroImage from "@assets/generated_images/Hero_banner_beauty_image_87edf850.png";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCart } from "@/contexts/CartContext";
 import type { Product } from "@shared/schema";
 
 interface ProductWithReviews extends Product {
@@ -16,20 +16,11 @@ interface ProductWithReviews extends Product {
   ratingCount: number;
 }
 
-interface CartItem {
-  id: string;
-  title: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
-
 export default function Home() {
   const [, setLocation] = useLocation();
-  const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { language, t } = useLanguage();
+  const { addToCart } = useCart();
 
   const { data: products = [], isLoading } = useQuery<ProductWithReviews[]>({
     queryKey: ["/api/products"],
@@ -63,27 +54,12 @@ export default function Home() {
                     key={product.id}
                     product={product}
                     onAddToCart={() => {
-                      setCartItems((prev) => {
-                        const existing = prev.find((item) => item.id === product.id);
-                        if (existing) {
-                          return prev.map((item) =>
-                            item.id === product.id
-                              ? { ...item, quantity: item.quantity + 1 }
-                              : item
-                          );
-                        }
-                        return [
-                          ...prev,
-                          {
-                            id: product.id,
-                            title: product[titleKey] as string,
-                            price: parseFloat(product.price),
-                            quantity: 1,
-                            image: product.imageUrl1,
-                          },
-                        ];
+                      addToCart({
+                        id: product.id,
+                        title: product[titleKey] as string,
+                        price: parseFloat(product.price),
+                        image: product.imageUrl1,
                       });
-                      setCartOpen(true);
                       console.log(`Added product ${product.id} to cart`);
                     }}
                     onClick={() => setLocation(`/product/${product.id}`)}
@@ -96,22 +72,6 @@ export default function Home() {
       </main>
 
       <Footer />
-
-      <ShoppingCart
-        isOpen={cartOpen}
-        onClose={() => setCartOpen(false)}
-        items={cartItems}
-        onUpdateQuantity={(id, quantity) => {
-          setCartItems((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-          );
-        }}
-        onRemoveItem={(id) => {
-          setCartItems((prev) => prev.filter((item) => item.id !== id));
-        }}
-        onApplyDiscount={(code) => console.log(`Discount code: ${code}`)}
-        onCheckout={() => setLocation("/checkout")}
-      />
 
       <SearchDialog
         isOpen={searchOpen}

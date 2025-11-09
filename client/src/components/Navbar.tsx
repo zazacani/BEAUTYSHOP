@@ -1,7 +1,9 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCart } from "@/contexts/CartContext";
 import { ShoppingCart, User, LogOut, Shield } from "lucide-react";
 import {
   DropdownMenu,
@@ -14,6 +16,7 @@ import {
 export default function Navbar() {
   const { user, logout, isAdmin } = useAuth();
   const { t, language, setLanguage } = useLanguage();
+  const { totalItems, setCartOpen } = useCart();
   const [location, setLocation] = useLocation();
 
   return (
@@ -56,8 +59,23 @@ export default function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" data-testid="button-cart">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            onClick={() => setCartOpen(true)}
+            data-testid="button-cart"
+          >
             <ShoppingCart className="w-5 h-5" />
+            {totalItems > 0 && (
+              <Badge
+                variant="destructive"
+                className="absolute -top-1 -right-1 h-5 min-w-5 flex items-center justify-center rounded-full px-1 text-xs"
+                data-testid="badge-cart-count"
+              >
+                {totalItems}
+              </Badge>
+            )}
           </Button>
 
           {user ? (
