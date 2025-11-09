@@ -196,6 +196,7 @@ function ProductForm({ product, onSuccess }: { product?: Product | null; onSucce
     descriptionEn: product?.descriptionEn || "",
     price: product?.price || "",
     quantityInStock: product?.quantityInStock || 0,
+    discountPercentage: product?.discountPercentage || 0,
     imageUrl1: product?.imageUrl1 || "",
     imageUrl2: product?.imageUrl2 || "",
     altTextFr: product?.altTextFr || "",
@@ -355,6 +356,23 @@ function ProductForm({ product, onSuccess }: { product?: Product | null; onSucce
                 required
                 data-testid="input-stock"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="discount">Promotion (% réduction)</Label>
+              <Input
+                id="discount"
+                type="number"
+                min="0"
+                max="100"
+                value={formData.discountPercentage}
+                onChange={(e) => setFormData({ ...formData, discountPercentage: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+                data-testid="input-discount"
+              />
+              <p className="text-xs text-muted-foreground">Entre 0 et 100%. Laisser à 0 pour aucune promotion.</p>
             </div>
           </div>
 
