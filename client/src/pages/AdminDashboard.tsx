@@ -410,9 +410,16 @@ function DiscountsTab() {
   );
 }
 
+interface Stats {
+  totalProducts: number;
+  totalOrders: number;
+  totalUsers: number;
+  totalRevenue: string;
+}
+
 function StatsTab() {
   const { t } = useLanguage();
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<Stats>({
     queryKey: ["/api/admin/stats"],
   });
 
