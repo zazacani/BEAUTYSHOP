@@ -1,79 +1,111 @@
-import { useState } from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Star } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import type { Product } from "@shared/schema";
 
 interface ProductCardProps {
-  id: string;
-  title: string;
-  price: number;
-  image1: string;
-  image2: string;
-  onAddToCart?: (id: string) => void;
-  onProductClick?: (id: string) => void;
+  product: Product & {
+    ratingAverage: number;
+    ratingCount: number;
+  };
+  onAddToCart?: () => void;
+  onClick?: () => void;
 }
 
-export default function ProductCard({
-  id,
-  title,
-  price,
-  image1,
-  image2,
-  onAddToCart,
-  onProductClick,
-}: ProductCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
+export default function ProductCard({ product, onAddToCart, onClick }: ProductCardProps) {
+  const { t, language } = useLanguage();
+
+  const titleKey = `title${language.charAt(0).toUpperCase() + language.slice(1)}` as keyof Product;
+  const descKey = `description${language.charAt(0).toUpperCase() + language.slice(1)}` as keyof Product;
+  const altKey = `altText${language.charAt(0).toUpperCase() + language.slice(1)}` as keyof Product;
+
+  const originalPrice = parseFloat(product.price);
+  const discountPercentage = product.discountPercentage || 0;
+  const discountedPrice = discountPercentage > 0 
+    ? originalPrice * (1 - discountPercentage / 100) 
+    : originalPrice;
 
   return (
-    <Card
-      className="group overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer"
-      data-testid={`card-product-${id}`}
-    >
-      <CardContent className="p-0">
-        <div
-          className="relative aspect-square overflow-hidden bg-card"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onClick={() => {
-            onProductClick?.(id);
-            console.log(`Product ${id} clicked`);
-          }}
-        >
-          <img
-            src={isHovered ? image2 : image1}
-            alt={title}
-            className="w-full h-full object-cover transition-opacity duration-300"
-            loading="lazy"
-          />
-        </div>
-        <div className="p-4">
-          <h3
-            className="font-semibold text-lg mb-2 line-clamp-2"
-            data-testid={`text-product-title-${id}`}
+    <Card className="flex flex-col group hover-elevate" data-testid={`card-product-${product.id}`}>
+      <CardHeader className="p-0 relative overflow-hidden cursor-pointer" onClick={onClick}>
+        {discountPercentage > 0 && (
+          <Badge 
+            className="absolute top-3 right-3 z-10 bg-red-500 text-white hover:bg-red-600"
+            data-testid={`badge-discount-${product.id}`}
           >
-            {title}
-          </h3>
-          <p
-            className="text-2xl font-bold"
-            data-testid={`text-product-price-${id}`}
-          >
-            CHF {price.toFixed(2)}
-          </p>
+            -{discountPercentage}%
+          </Badge>
+        )}
+        <img
+          src={product.imageUrl1}
+          alt={product[altKey] as string}
+          className="w-full h-64 object-cover rounded-t-md transition-opacity duration-300 group-hover:opacity-0"
+          data-testid={`img-product-${product.id}`}
+        />
+        <img
+          src={product.imageUrl2}
+          alt={product[altKey] as string}
+          className="w-full h-64 object-cover rounded-t-md absolute top-0 left-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          data-testid={`img-product-hover-${product.id}`}
+        />
+      </CardHeader>
+      <CardContent className="flex-1 p-6">
+        <CardTitle className="mb-2 font-bold cursor-pointer" onClick={onClick} data-testid={`text-product-title-${product.id}`}>
+          {product[titleKey] as string}
+        </CardTitle>
+        <CardDescription className="line-clamp-3 mb-4 text-sm" data-testid={`text-product-desc-${product.id}`}>
+          {product[descKey] as string}
+        </CardDescription>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2" data-testid={`text-product-rating-${product.id}`}>
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((starIndex) => (
+                <Star
+                  key={starIndex}
+                  className={`w-4 h-4 ${
+                    starIndex <= Math.round(product.ratingAverage)
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700"
+                  }`}
+                />
+              ))}
+            </div>
+            {product.ratingCount > 0 ? (
+              <span className="text-sm text-muted-foreground">
+                {product.ratingAverage.toFixed(1)} ({product.ratingCount})
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">{t("products.noReviews")}</span>
+            )}
+          </div>
+          <div>
+            {discountPercentage > 0 ? (
+              <div className="flex items-center gap-2">
+                <p className="text-lg text-muted-foreground line-through" data-testid={`text-product-price-original-${product.id}`}>
+                  CHF {originalPrice.toFixed(2)}
+                </p>
+                <p className="text-2xl font-bold text-red-500" data-testid={`text-product-price-${product.id}`}>
+                  CHF {discountedPrice.toFixed(2)}
+                </p>
+              </div>
+            ) : (
+              <p className="text-2xl font-bold" data-testid={`text-product-price-${product.id}`}>
+                CHF {originalPrice.toFixed(2)}
+              </p>
+            )}
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="p-6 pt-0">
         <Button
-          variant="default"
           className="w-full"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToCart?.(id);
-            console.log(`Added product ${id} to cart`);
-          }}
-          data-testid={`button-add-to-cart-${id}`}
+          disabled={product.quantityInStock === 0}
+          onClick={onAddToCart}
+          data-testid={`button-add-to-cart-${product.id}`}
         >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          Ajouter au panier
+          {product.quantityInStock === 0 ? t("products.outOfStock") : t("products.addToCart")}
         </Button>
       </CardFooter>
     </Card>
