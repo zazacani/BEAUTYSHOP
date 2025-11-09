@@ -21,6 +21,7 @@ export const products = pgTable("products", {
   descriptionDe: text("description_de").notNull(),
   descriptionEn: text("description_en").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  discountPercentage: integer("discount_percentage").default(0),
   quantityInStock: integer("quantity_in_stock").notNull().default(0),
   imageUrl1: text("image_url_1").notNull(),
   imageUrl2: text("image_url_2").notNull(),
