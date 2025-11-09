@@ -7,13 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Package, TrendingUp, Users, ShoppingCart } from "lucide-react";
-import type { Product, DiscountCode } from "@shared/schema";
+import type { Product, DiscountCode, Order } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 
 export default function AdminDashboard() {
@@ -55,6 +67,10 @@ export default function AdminDashboard() {
               <Users className="w-4 h-4 mr-2" />
               {t("admin.stats")}
             </TabsTrigger>
+            <TabsTrigger value="orders" data-testid="tab-orders">
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Commandes
+            </TabsTrigger>
             <TabsTrigger value="settings" data-testid="tab-settings">
               {t("admin.settings")}
             </TabsTrigger>
@@ -66,6 +82,10 @@ export default function AdminDashboard() {
 
           <TabsContent value="discounts">
             <DiscountsTab />
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <OrdersTab />
           </TabsContent>
 
           <TabsContent value="stats">
@@ -86,6 +106,7 @@ function ProductsTab() {
   const { toast } = useToast();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
@@ -98,6 +119,7 @@ function ProductsTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({ title: "Produit supprimé avec succès" });
+      setProductToDelete(null);
     },
   });
 
@@ -164,14 +186,36 @@ function ProductsTab() {
                         />
                       </DialogContent>
                     </Dialog>
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => deleteProduct.mutate(product.id)}
-                      data-testid={`button-delete-${product.id}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <AlertDialog open={productToDelete?.id === product.id} onOpenChange={(open) => !open && setProductToDelete(null)}>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => setProductToDelete(product)}
+                          data-testid={`button-delete-${product.id}`}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent data-testid="dialog-confirm-delete">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Êtes-vous sûr de vouloir supprimer "{product.titleFr}" ? Cette action est irréversible.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel data-testid="button-cancel-delete">Annuler</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteProduct.mutate(product.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            data-testid="button-confirm-delete"
+                          >
+                            Supprimer
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardHeader>
@@ -506,6 +550,210 @@ interface Stats {
   totalOrders: number;
   totalUsers: number;
   totalRevenue: string;
+}
+
+function OrdersTab() {
+  const { toast } = useToast();
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [dateFilter, setDateFilter] = useState<string>("ALL");
+  const [updatingOrder, setUpdatingOrder] = useState<Order | null>(null);
+  const [trackingNumber, setTrackingNumber] = useState("");
+
+  const { data: orders, isLoading } = useQuery<(Order & { userName: string; userEmail: string })[]>({
+    queryKey: ["/api/orders"],
+  });
+
+  const updateOrderStatus = useMutation({
+    mutationFn: async (data: { orderId: string; status: string; trackingNumber?: string }) => {
+      await apiRequest("PATCH", `/api/orders/${data.orderId}/status`, {
+        status: data.status,
+        trackingNumber: data.trackingNumber,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({ title: "Commande mise à jour avec succès" });
+      setUpdatingOrder(null);
+      setTrackingNumber("");
+    },
+  });
+
+  const filteredOrders = orders?.filter((order) => {
+    if (statusFilter !== "ALL" && order.status !== statusFilter) return false;
+    if (dateFilter !== "ALL") {
+      const orderDate = new Date(order.createdAt);
+      const now = new Date();
+      if (dateFilter === "TODAY") {
+        return orderDate.toDateString() === now.toDateString();
+      } else if (dateFilter === "WEEK") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return orderDate >= weekAgo;
+      } else if (dateFilter === "MONTH") {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return orderDate >= monthAgo;
+      }
+    }
+    return true;
+  });
+
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case "PENDING": return "bg-yellow-500";
+      case "PROCESSING": return "bg-blue-500";
+      case "SHIPPED": return "bg-purple-500";
+      case "DELIVERED": return "bg-green-500";
+      case "CANCELLED": return "bg-red-500";
+      default: return "bg-gray-500";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "PENDING": return "En attente";
+      case "PROCESSING": return "En traitement";
+      case "SHIPPED": return "Expédiée";
+      case "DELIVERED": return "Livrée";
+      case "CANCELLED": return "Annulée";
+      default: return status;
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-4 flex-wrap">
+        <div className="space-y-2">
+          <Label>Filtrer par statut</Label>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-48" data-testid="select-status-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tous les statuts</SelectItem>
+              <SelectItem value="PENDING">En attente</SelectItem>
+              <SelectItem value="PROCESSING">En traitement</SelectItem>
+              <SelectItem value="SHIPPED">Expédiée</SelectItem>
+              <SelectItem value="DELIVERED">Livrée</SelectItem>
+              <SelectItem value="CANCELLED">Annulée</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Filtrer par date</Label>
+          <Select value={dateFilter} onValueChange={setDateFilter}>
+            <SelectTrigger className="w-48" data-testid="select-date-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Toutes les dates</SelectItem>
+              <SelectItem value="TODAY">Aujourd'hui</SelectItem>
+              <SelectItem value="WEEK">Cette semaine</SelectItem>
+              <SelectItem value="MONTH">Ce mois</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="text-center py-12">Chargement...</div>
+      ) : filteredOrders && filteredOrders.length > 0 ? (
+        <div className="space-y-4">
+          {filteredOrders.map((order) => (
+            <Card key={order.id} data-testid={`card-order-${order.id}`}>
+              <CardHeader>
+                <div className="flex justify-between items-start gap-2">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg">Commande #{order.id.slice(0, 8)}</CardTitle>
+                    <CardDescription>
+                      <div>Client: {order.userName} ({order.userEmail})</div>
+                      <div>Créée: {new Date(order.createdAt).toLocaleDateString()}</div>
+                      <div>Mise à jour: {new Date(order.updatedAt).toLocaleDateString()}</div>
+                      {order.trackingNumber && <div>Suivi: {order.trackingNumber}</div>}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-white text-sm ${getStatusBadgeColor(order.status)}`}>
+                      {getStatusLabel(order.status)}
+                    </span>
+                    <span className="text-lg font-bold">CHF {order.totalAmount}</span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Dialog open={updatingOrder?.id === order.id} onOpenChange={(open) => !open && setUpdatingOrder(null)}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => setUpdatingOrder(order)} data-testid={`button-update-status-${order.id}`}>
+                      Mettre à jour le statut
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Mettre à jour la commande</DialogTitle>
+                      <DialogDescription>
+                        Commande #{order.id.slice(0, 8)} - {order.userName}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Nouveau statut</Label>
+                        <Select
+                          defaultValue={order.status}
+                          onValueChange={(status) => {
+                            if (status !== "SHIPPED") {
+                              updateOrderStatus.mutate({ orderId: order.id, status });
+                            } else {
+                              setTrackingNumber("");
+                            }
+                          }}
+                        >
+                          <SelectTrigger data-testid="select-new-status">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PENDING">En attente</SelectItem>
+                            <SelectItem value="PROCESSING">En traitement</SelectItem>
+                            <SelectItem value="SHIPPED">Expédiée</SelectItem>
+                            <SelectItem value="DELIVERED">Livrée</SelectItem>
+                            <SelectItem value="CANCELLED">Annulée</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tracking">Numéro de suivi (facultatif pour "Expédiée")</Label>
+                        <Input
+                          id="tracking"
+                          value={trackingNumber}
+                          onChange={(e) => setTrackingNumber(e.target.value)}
+                          placeholder="Ex: 1Z999AA10123456784"
+                          data-testid="input-tracking"
+                        />
+                      </div>
+                      <Button
+                        onClick={() => updateOrderStatus.mutate({ 
+                          orderId: order.id, 
+                          status: "SHIPPED",
+                          trackingNumber: trackingNumber || undefined
+                        })}
+                        disabled={updateOrderStatus.isPending}
+                        data-testid="button-confirm-update"
+                      >
+                        {updateOrderStatus.isPending ? "Mise à jour..." : "Marquer comme expédiée"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            Aucune commande trouvée
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
 }
 
 function StatsTab() {
