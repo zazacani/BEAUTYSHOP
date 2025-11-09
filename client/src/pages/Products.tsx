@@ -1,19 +1,33 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import type { Product } from "@shared/schema";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
+import ShoppingCart from "@/components/ShoppingCart";
+import Footer from "@/components/Footer";
 
 interface ProductWithReviews extends Product {
   ratingAverage: number;
   ratingCount: number;
 }
 
+interface CartItem {
+  id: string;
+  title: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
 export default function Products() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [, setLocation] = useLocation();
   const { t, language } = useLanguage();
 
   const { data: products, isLoading } = useQuery<ProductWithReviews[]>({
@@ -57,17 +71,61 @@ export default function Products() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts?.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={() => console.log(`Added ${product.id} to cart`)}
-                onClick={() => console.log(`Clicked product ${product.id}`)}
-              />
-            ))}
+            {filteredProducts?.map((product) => {
+              const titleKey = `title${language.charAt(0).toUpperCase() + language.slice(1)}` as keyof Product;
+              return (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={() => {
+                    setCartItems((prev) => {
+                      const existing = prev.find((item) => item.id === product.id);
+                      if (existing) {
+                        return prev.map((item) =>
+                          item.id === product.id
+                            ? { ...item, quantity: item.quantity + 1 }
+                            : item
+                        );
+                      }
+                      return [
+                        ...prev,
+                        {
+                          id: product.id,
+                          title: product[titleKey] as string,
+                          price: parseFloat(product.price),
+                          quantity: 1,
+                          image: product.imageUrl1,
+                        },
+                      ];
+                    });
+                    setCartOpen(true);
+                    console.log(`Added ${product.id} to cart`);
+                  }}
+                  onClick={() => setLocation(`/product/${product.id}`)}
+                />
+              );
+            })}
           </div>
         )}
       </div>
+
+      <Footer />
+
+      <ShoppingCart
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+        items={cartItems}
+        onUpdateQuantity={(id, quantity) => {
+          setCartItems((prev) =>
+            prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+          );
+        }}
+        onRemoveItem={(id) => {
+          setCartItems((prev) => prev.filter((item) => item.id !== id));
+        }}
+        onApplyDiscount={(code) => console.log(`Discount code: ${code}`)}
+        onCheckout={() => setLocation("/checkout")}
+      />
     </div>
   );
 }

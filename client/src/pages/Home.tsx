@@ -83,6 +83,7 @@ export default function Home() {
                           },
                         ];
                       });
+                      setCartOpen(true);
                       console.log(`Added product ${product.id} to cart`);
                     }}
                     onClick={() => setLocation(`/product/${product.id}`)}

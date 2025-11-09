@@ -80,6 +80,7 @@ export default function ProductPage() {
                   },
                 ];
               });
+              setCartOpen(true);
               console.log(`Added ${quantity} items to cart`);
             }}
           />

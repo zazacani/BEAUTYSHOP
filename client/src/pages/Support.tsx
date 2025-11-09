@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Support() {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -24,40 +26,40 @@ export default function Support() {
       <main className="flex-1 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h1 className="text-4xl font-serif font-bold mb-8 text-center">
-            Support Client
+            {t("support.title")}
           </h1>
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <Card>
               <CardHeader>
-                <CardTitle>Contactez-nous</CardTitle>
+                <CardTitle>{t("support.contactUs")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Email</p>
-                  <p className="font-medium">contact@beautesuisse.ch</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("support.email")}</p>
+                  <p className="font-medium">contact@mue.ch</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Téléphone</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("support.phone")}</p>
                   <p className="font-medium">+41 22 XXX XX XX</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    Horaires d'ouverture
+                    {t("support.hours")}
                   </p>
-                  <p className="font-medium">Lun-Ven: 9h00 - 18h00</p>
+                  <p className="font-medium">{t("support.hoursValue")}</p>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Envoyez-nous un message</CardTitle>
+                <CardTitle>{t("support.sendMessage")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nom</Label>
+                    <Label htmlFor="name">{t("support.name")}</Label>
                     <Input
                       id="name"
                       value={name}
@@ -67,7 +69,7 @@ export default function Support() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t("support.email")}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -78,7 +80,7 @@ export default function Support() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message">{t("support.message")}</Label>
                     <Textarea
                       id="message"
                       rows={4}
@@ -89,7 +91,7 @@ export default function Support() {
                     />
                   </div>
                   <Button type="submit" className="w-full" data-testid="button-submit">
-                    Envoyer
+                    {t("support.send")}
                   </Button>
                 </form>
               </CardContent>
@@ -98,34 +100,31 @@ export default function Support() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Questions Fréquentes</CardTitle>
+              <CardTitle>{t("support.faq")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <h3 className="font-semibold mb-2">
-                  Quels sont les délais de livraison ?
+                  {t("support.faq1Q")}
                 </h3>
                 <p className="text-muted-foreground">
-                  Les commandes sont généralement livrées en 2-3 jours ouvrables en
-                  Suisse.
+                  {t("support.faq1A")}
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">
-                  Comment puis-je retourner un produit ?
+                  {t("support.faq2Q")}
                 </h3>
                 <p className="text-muted-foreground">
-                  Vous pouvez retourner tout produit dans les 30 jours suivant la
-                  réception. Contactez-nous pour obtenir un numéro de retour.
+                  {t("support.faq2A")}
                 </p>
               </div>
               <div>
                 <h3 className="font-semibold mb-2">
-                  Les produits sont-ils authentiques ?
+                  {t("support.faq3Q")}
                 </h3>
                 <p className="text-muted-foreground">
-                  Tous nos produits sont 100% authentiques et proviennent directement
-                  des fabricants.
+                  {t("support.faq3A")}
                 </p>
               </div>
             </CardContent>

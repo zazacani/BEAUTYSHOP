@@ -3,6 +3,7 @@ import { X, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CartItem {
   id: string;
@@ -31,6 +32,7 @@ export default function ShoppingCart({
   onApplyDiscount,
   onCheckout,
 }: ShoppingCartProps) {
+  const { t } = useLanguage();
   const [discountCode, setDiscountCode] = useState("");
 
   const subtotal = items.reduce(
@@ -52,7 +54,7 @@ export default function ShoppingCart({
       <div className="fixed right-0 top-0 h-full w-full md:w-96 bg-background z-50 shadow-2xl transform transition-transform duration-300 flex flex-col">
         <div className="p-6 border-b flex items-center justify-between">
           <h2 className="text-2xl font-semibold" data-testid="text-cart-title">
-            Panier
+            {t("cart.title")}
           </h2>
           <Button
             variant="ghost"
@@ -67,7 +69,7 @@ export default function ShoppingCart({
         <div className="flex-1 overflow-y-auto p-6">
           {items.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              Votre panier est vide
+              {t("cart.empty")}
             </p>
           ) : (
             <div className="space-y-4">
@@ -139,7 +141,7 @@ export default function ShoppingCart({
           <div className="p-6 border-t">
             <div className="flex gap-2 mb-4">
               <Input
-                placeholder="Code de réduction"
+                placeholder={t("cart.discountCode")}
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value)}
                 data-testid="input-discount-code"
@@ -152,7 +154,7 @@ export default function ShoppingCart({
                 }}
                 data-testid="button-apply-discount"
               >
-                Appliquer
+                {t("cart.apply")}
               </Button>
             </div>
 
@@ -160,18 +162,18 @@ export default function ShoppingCart({
 
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span>Sous-total</span>
+                <span>{t("cart.subtotal")}</span>
                 <span data-testid="text-subtotal">CHF {subtotal.toFixed(2)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-primary">
-                  <span>Réduction</span>
+                  <span>{t("cart.discount")}</span>
                   <span data-testid="text-discount">-CHF {discount.toFixed(2)}</span>
                 </div>
               )}
               <Separator className="my-2" />
               <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
+                <span>{t("cart.total")}</span>
                 <span data-testid="text-total">CHF {total.toFixed(2)}</span>
               </div>
             </div>
@@ -185,7 +187,7 @@ export default function ShoppingCart({
               }}
               data-testid="button-checkout"
             >
-              Passer la commande
+              {t("cart.checkout")}
             </Button>
           </div>
         )}
