@@ -83,23 +83,34 @@ export default function Products() {
                     <CardTitle className="mb-2 font-bold" data-testid={`text-product-title-${product.id}`}>
                       {product[titleKey] as string}
                     </CardTitle>
-                    <CardDescription className="line-clamp-2 mb-4" data-testid={`text-product-desc-${product.id}`}>
+                    <CardDescription className="line-clamp-3 mb-4 text-sm" data-testid={`text-product-desc-${product.id}`}>
                       {product[descKey] as string}
                     </CardDescription>
-                    <div className="space-y-2">
-                      <p className="text-2xl font-bold" data-testid={`text-product-price-${product.id}`}>
-                        CHF {product.price}
-                      </p>
-                      <div className="flex items-center gap-1" data-testid={`text-product-rating-${product.id}`}>
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2" data-testid={`text-product-rating-${product.id}`}>
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((starIndex) => (
+                            <Star
+                              key={starIndex}
+                              className={`w-4 h-4 ${
+                                starIndex <= Math.round(product.ratingAverage)
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-gray-200 text-gray-200 dark:fill-gray-700 dark:text-gray-700"
+                              }`}
+                            />
+                          ))}
+                        </div>
                         {product.ratingCount > 0 ? (
-                          <span className="text-sm">
-                            {product.ratingAverage.toFixed(1)} ({product.ratingCount} {product.ratingCount === 1 ? t("products.review") : t("products.reviews")})
+                          <span className="text-sm text-muted-foreground">
+                            {product.ratingAverage.toFixed(1)} ({product.ratingCount})
                           </span>
                         ) : (
                           <span className="text-sm text-muted-foreground">{t("products.noReviews")}</span>
                         )}
                       </div>
+                      <p className="text-2xl font-bold" data-testid={`text-product-price-${product.id}`}>
+                        CHF {product.price}
+                      </p>
                     </div>
                   </CardContent>
                   <CardFooter className="p-6 pt-0">

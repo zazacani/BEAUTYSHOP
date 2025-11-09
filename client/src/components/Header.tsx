@@ -40,7 +40,7 @@ export default function Header({
         <div className="flex items-center justify-between h-16">
           <Link href="/" data-testid="link-home">
             <h1 className="text-2xl font-serif font-bold hover-elevate px-2 py-1 rounded-md cursor-pointer">
-              Beauté Suisse
+              MUE
             </h1>
           </Link>
 

@@ -20,14 +20,14 @@ export default function Legal() {
               </CardHeader>
               <CardContent className="prose prose-sm max-w-none">
                 <p>
-                  <strong>Nom de l'entreprise:</strong> Beauté Suisse SA
+                  <strong>Nom de l'entreprise:</strong> MUE SA
                 </p>
                 <p>
                   <strong>Adresse:</strong> Rue de la Beauté 123, 1201 Genève,
                   Suisse
                 </p>
                 <p>
-                  <strong>Email:</strong> contact@beautesuisse.ch
+                  <strong>Email:</strong> contact@mue.ch
                 </p>
                 <p>
                   <strong>Téléphone:</strong> +41 22 XXX XX XX
@@ -43,7 +43,7 @@ export default function Legal() {
                 <h3>1. Objet</h3>
                 <p>
                   Les présentes conditions générales de vente régissent les ventes
-                  de produits de beauté effectuées par Beauté Suisse SA.
+                  de produits de beauté effectuées par MUE SA.
                 </p>
 
                 <h3>2. Commandes</h3>

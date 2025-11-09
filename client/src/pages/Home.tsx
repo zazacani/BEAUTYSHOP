@@ -54,7 +54,7 @@ export default function Home() {
 
       <main className="flex-1">
         <Hero
-          title="Beauté Suisse"
+          title="MUE"
           subtitle="Découvrez notre collection de produits de beauté premium"
           ctaText="Découvrir la collection"
           ctaLink="#products"

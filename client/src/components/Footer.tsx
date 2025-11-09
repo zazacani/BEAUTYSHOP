@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="font-serif text-2xl font-bold mb-4">Beauté Suisse</h3>
+            <h3 className="font-serif text-2xl font-bold mb-4">MUE</h3>
             <p className="text-muted-foreground text-sm">
               Votre destination pour les produits de beauté premium en Suisse
             </p>
@@ -38,7 +38,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Contact</h4>
             <p className="text-sm text-muted-foreground mb-2">
-              Email: contact@beautesuisse.ch
+              Email: contact@mue.ch
             </p>
             <p className="text-sm text-muted-foreground">
               Téléphone: +41 22 XXX XX XX
@@ -48,7 +48,7 @@ export default function Footer() {
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
           <p data-testid="text-copyright">
-            © {currentYear} Beauté Suisse. Tous droits réservés.
+            © {currentYear} MUE. Tous droits réservés.
           </p>
         </div>
       </div>
