@@ -30,9 +30,6 @@ export class OrderRepository {
   async findByPaymentIntentId(paymentIntentId: string): Promise<Order | undefined> {
     return await db.query.orders.findFirst({
       where: eq(orders.paymentIntentId, paymentIntentId),
-      with: {
-        items: true,
-      },
     });
   }
 

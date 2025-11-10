@@ -21,6 +21,13 @@ export default function CheckoutSuccess() {
     const confirmOrder = async () => {
       const params = new URLSearchParams(window.location.search);
       const paymentIntentId = params.get("payment_intent");
+      const existingOrderId = params.get("orderId");
+
+      if (existingOrderId) {
+        setOrderId(existingOrderId);
+        setLoading(false);
+        return;
+      }
 
       if (!paymentIntentId) {
         setError(t("checkout.noPaymentIntent"));
@@ -84,8 +91,16 @@ export default function CheckoutSuccess() {
               <CardTitle className="text-2xl">{t("checkout.error")}</CardTitle>
               <CardDescription>{error}</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               <Button
+                onClick={() => setLocation("/checkout")}
+                className="w-full"
+                data-testid="button-retry-payment"
+              >
+                {t("checkout.tryAnotherCard")}
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => setLocation("/")}
                 className="w-full"
                 data-testid="button-back-home"

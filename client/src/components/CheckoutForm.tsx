@@ -30,18 +30,66 @@ export default function CheckoutForm() {
 
     setIsProcessing(true);
 
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: window.location.origin + "/checkout-success",
-      },
-    });
+    try {
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        redirect: "if_required",
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: t("checkout.paymentFailed"),
+          description: error.message,
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      if (paymentIntent && paymentIntent.status === "succeeded") {
+        const response = await apiRequest("POST", "/api/confirm-order", {
+          paymentIntentId: paymentIntent.id,
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          clearCart();
+          toast({
+            title: t("checkout.paymentSuccess"),
+            description: t("checkout.orderConfirmed"),
+          });
+          setLocation(`/checkout-success?orderId=${data.orderId}`);
+        } else {
+          toast({
+            variant: "destructive",
+            title: t("checkout.error"),
+            description: data.error || t("checkout.orderCreationFailed"),
+          });
+          setIsProcessing(false);
+        }
+      } else if (paymentIntent && paymentIntent.status === "requires_action") {
+        const { error: confirmError } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/checkout-success`,
+          },
+        });
+
+        if (confirmError) {
+          toast({
+            variant: "destructive",
+            title: t("checkout.paymentFailed"),
+            description: confirmError.message,
+          });
+          setIsProcessing(false);
+        }
+      }
+    } catch (err: any) {
       toast({
         variant: "destructive",
-        title: t("checkout.paymentFailed"),
-        description: error.message,
+        title: t("checkout.error"),
+        description: err.message || t("checkout.somethingWentWrong"),
       });
       setIsProcessing(false);
     }
