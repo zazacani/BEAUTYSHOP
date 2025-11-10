@@ -30,42 +30,18 @@ export default function CheckoutForm() {
 
     setIsProcessing(true);
 
-    try {
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.origin + "/checkout-success",
-        },
-        redirect: "if_required",
-      });
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: window.location.origin + "/checkout-success",
+      },
+    });
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: t("checkout.paymentFailed"),
-          description: error.message,
-        });
-        setIsProcessing(false);
-        return;
-      }
-
-      if (paymentIntent && paymentIntent.status === "succeeded") {
-        await apiRequest("POST", "/api/confirm-order", {
-          paymentIntentId: paymentIntent.id,
-        });
-
-        clearCart();
-        toast({
-          title: t("checkout.paymentSuccess"),
-          description: t("checkout.orderConfirmed"),
-        });
-        setLocation("/checkout-success");
-      }
-    } catch (err: any) {
+    if (error) {
       toast({
         variant: "destructive",
-        title: t("checkout.error"),
-        description: err.message || t("checkout.somethingWentWrong"),
+        title: t("checkout.paymentFailed"),
+        description: error.message,
       });
       setIsProcessing(false);
     }
