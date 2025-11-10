@@ -344,6 +344,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
+      let stripeCustomerId = user.stripeCustomerId;
+      if (!stripeCustomerId) {
+        const existingCustomers = await stripe.customers.list({
+          email: user.email,
+          limit: 1,
+        });
+        
+        if (existingCustomers.data.length > 0) {
+          stripeCustomerId = existingCustomers.data[0].id;
+        } else {
+          const customer = await stripe.customers.create({
+            email: user.email,
+            name: user.name,
+            metadata: {
+              userId: user.id,
+            },
+          });
+          stripeCustomerId = customer.id;
+        }
+        await userRepo.update(user.id, { stripeCustomerId });
+      }
+
       let totalAmount = 0;
       const productDetails = await Promise.all(
         items.map(async (item: { id: string; quantity: number }) => {
@@ -369,6 +391,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(totalAmount * 100),
         currency: "chf",
+        customer: stripeCustomerId,
+        setup_future_usage: "off_session",
         automatic_payment_methods: {
           enabled: true,
         },
@@ -457,7 +481,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Orders routes
   app.get("/api/orders/my-orders", authenticate, async (req: AuthRequest, res) => {
     try {
-      const orders = await orderRepo.getUserOrdersWithDetails(req.user!.userId);
+      if (!req.user || !req.user.userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      const orders = await orderRepo.getUserOrdersWithDetails(req.user.userId);
       res.json(orders);
     } catch (error: any) {
       console.error("Get user orders error:", error);

@@ -95,7 +95,7 @@ export default function Checkout() {
     appearance: {
       theme: 'stripe' as const,
     },
-    payment_method_save: 'disabled' as const,
+    payment_method_save: 'enabled' as const,
   };
 
   return (
