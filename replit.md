@@ -93,6 +93,7 @@ Preferred communication style: Simple, everyday language.
 - Foreign key relationships with referential integrity
 - Indexes on frequently queried fields (email, code)
 - Brand system with nullable FK (products can exist without brand assignment)
+- **Unique constraint on orders.paymentIntentId** for payment idempotency
 
 ### Authentication & Security
 
@@ -166,13 +167,21 @@ Preferred communication style: Simple, everyday language.
 - Swiss Post API integration for delivery time calculation
 - Alternative: Manual configuration of delivery estimates
 
-**Payment Gateway (Stripe Integration):**
-- Stripe Checkout for secure payment processing
-- Server-side price validation for security
+**Payment Gateway (Stripe Payment Element):**
+- **On-site payment processing** with Stripe Payment Element (no external redirects)
+- Server-side price validation and recalculation for security
 - CHF currency support for Swiss market
+- **Idempotent order creation** via unique paymentIntentId constraint
+- **Security features**:
+  - User ownership validation against PaymentIntent metadata
+  - Payment status verification (requires "succeeded" status)
+  - Server-side price calculation prevents client tampering
+- **User experience**:
+  - Seamless checkout flow without leaving the site
+  - "Try Another Card" option for failed payments
+  - Iframe-safe implementation for Replit environment (redirect: "if_required")
 - Test mode enabled with Stripe test keys
-- Payment success/cancel page redirects
-- Future enhancement: Webhook integration for payment confirmation
+- Future enhancement: Webhook integration for payment notifications
 
 ### Key NPM Packages
 
