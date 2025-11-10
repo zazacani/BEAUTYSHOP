@@ -128,6 +128,18 @@ const translations = {
     "cart.apply": "Appliquer",
     "cart.checkout": "Passer la commande",
     
+    // Payment
+    "payment.success.title": "Paiement réussi !",
+    "payment.success.description": "Votre commande a été confirmée",
+    "payment.success.confirmation": "Vous recevrez un email de confirmation avec les détails de votre commande.",
+    "payment.success.backToHome": "Retour à l'accueil",
+    "payment.success.continueShopping": "Continuer mes achats",
+    "payment.cancel.title": "Paiement annulé",
+    "payment.cancel.description": "Votre paiement n'a pas été traité",
+    "payment.cancel.message": "Votre panier a été conservé. Vous pouvez réessayer quand vous voulez.",
+    "payment.cancel.backToHome": "Retour à l'accueil",
+    "payment.cancel.continueShopping": "Retourner au panier",
+    
     // Footer
     "footer.tagline": "Votre destination pour les produits de beauté premium en Suisse",
     "footer.quickLinks": "Liens Rapides",
@@ -258,6 +270,18 @@ const translations = {
     "cart.apply": "Anwenden",
     "cart.checkout": "Zur Kasse",
     
+    // Payment
+    "payment.success.title": "Zahlung erfolgreich!",
+    "payment.success.description": "Ihre Bestellung wurde bestätigt",
+    "payment.success.confirmation": "Sie erhalten eine Bestätigungs-E-Mail mit den Details Ihrer Bestellung.",
+    "payment.success.backToHome": "Zurück zur Startseite",
+    "payment.success.continueShopping": "Weiter einkaufen",
+    "payment.cancel.title": "Zahlung abgebrochen",
+    "payment.cancel.description": "Ihre Zahlung wurde nicht verarbeitet",
+    "payment.cancel.message": "Ihr Warenkorb wurde gespeichert. Sie können es jederzeit erneut versuchen.",
+    "payment.cancel.backToHome": "Zurück zur Startseite",
+    "payment.cancel.continueShopping": "Zurück zum Warenkorb",
+    
     // Footer
     "footer.tagline": "Ihr Ziel für Premium-Schönheitsprodukte in der Schweiz",
     "footer.quickLinks": "Schnelllinks",
@@ -387,6 +411,18 @@ const translations = {
     "cart.discountCode": "Discount code",
     "cart.apply": "Apply",
     "cart.checkout": "Checkout",
+    
+    // Payment
+    "payment.success.title": "Payment Successful!",
+    "payment.success.description": "Your order has been confirmed",
+    "payment.success.confirmation": "You will receive a confirmation email with your order details.",
+    "payment.success.backToHome": "Back to Home",
+    "payment.success.continueShopping": "Continue Shopping",
+    "payment.cancel.title": "Payment Cancelled",
+    "payment.cancel.description": "Your payment was not processed",
+    "payment.cancel.message": "Your cart has been saved. You can try again whenever you're ready.",
+    "payment.cancel.backToHome": "Back to Home",
+    "payment.cancel.continueShopping": "Back to Cart",
     
     // Footer
     "footer.tagline": "Your destination for premium beauty products in Switzerland",

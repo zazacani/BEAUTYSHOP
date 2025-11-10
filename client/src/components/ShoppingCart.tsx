@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface CartItem {
   id: string;
@@ -33,6 +37,8 @@ export default function ShoppingCart({
   onCheckout,
 }: ShoppingCartProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [discountCode, setDiscountCode] = useState("");
 
   const subtotal = items.reduce(
@@ -41,6 +47,35 @@ export default function ShoppingCart({
   );
   const discount = 0;
   const total = subtotal - discount;
+
+  const checkoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/create-checkout-session", { items });
+      return await response.json();
+    },
+    onSuccess: (data: { url: string }) => {
+      window.location.href = data.url;
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to start checkout",
+      });
+    },
+  });
+
+  const handleCheckout = () => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Required",
+        description: "Please login to proceed with checkout",
+      });
+      return;
+    }
+    checkoutMutation.mutate();
+  };
 
   if (!isOpen) return null;
 
@@ -181,13 +216,11 @@ export default function ShoppingCart({
             <Button
               className="w-full mt-6"
               size="lg"
-              onClick={() => {
-                onCheckout?.();
-                console.log("Checkout clicked");
-              }}
+              onClick={handleCheckout}
+              disabled={checkoutMutation.isPending}
               data-testid="button-checkout"
             >
-              {t("cart.checkout")}
+              {checkoutMutation.isPending ? "Processing..." : t("cart.checkout")}
             </Button>
           </div>
         )}

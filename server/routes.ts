@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
 import path from "path";
+import Stripe from "stripe";
 import { AuthService } from "./services/auth.service";
 import { ProductService } from "./services/product.service";
 import { DiscountService } from "./services/discount.service";
@@ -16,6 +17,10 @@ import { authenticate, requireAdmin, type AuthRequest } from "./middleware/auth.
 import { insertUserSchema, insertProductSchema, insertDiscountCodeSchema, insertSiteSettingsSchema } from "@shared/schema";
 import { AdminService } from "./services/admin.service";
 import { UserService, updateProfileSchema, changePasswordSchema } from "./services/user.service";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2024-06-20",
+});
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -314,6 +319,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updated);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/create-checkout-session", authenticate, async (req: AuthRequest, res) => {
+    try {
+      const { items } = req.body;
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ error: "Cart items are required" });
+      }
+
+      const user = await userRepo.findById(req.user!.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const lineItems = await Promise.all(
+        items.map(async (item: { id: string; quantity: number }) => {
+          const product = await productRepo.findById(item.id);
+          if (!product) {
+            throw new Error(`Product not found: ${item.id}`);
+          }
+          if (item.quantity < 1) {
+            throw new Error(`Invalid quantity for product: ${item.id}`);
+          }
+
+          return {
+            price_data: {
+              currency: "chf",
+              product_data: {
+                name: product.titleEn || product.titleFr || product.titleDe || "Product",
+                images: product.imageUrl1 ? [`${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}${product.imageUrl1}`] : [],
+              },
+              unit_amount: Math.round(parseFloat(product.price) * 100),
+            },
+            quantity: item.quantity,
+          };
+        })
+      );
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        line_items: lineItems,
+        success_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment-cancel`,
+        customer_email: user.email,
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error("Stripe checkout error:", error);
+      res.status(500).json({ error: error.message });
     }
   });
 
