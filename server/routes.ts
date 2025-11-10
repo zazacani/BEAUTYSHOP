@@ -335,6 +335,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : 'http://localhost:5000';
+
       const lineItems = await Promise.all(
         items.map(async (item: { id: string; quantity: number }) => {
           const product = await productRepo.findById(item.id);
@@ -350,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               currency: "chf",
               product_data: {
                 name: product.titleEn || product.titleFr || product.titleDe || "Product",
-                images: product.imageUrl1 ? [`${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}${product.imageUrl1}`] : [],
+                images: product.imageUrl1 ? [`${baseUrl}${product.imageUrl1}`] : [],
               },
               unit_amount: Math.round(parseFloat(product.price) * 100),
             },
@@ -363,8 +367,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         payment_method_types: ["card"],
         mode: "payment",
         line_items: lineItems,
-        success_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment-cancel`,
+        success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}/payment-cancel`,
         customer_email: user.email,
       });
 
