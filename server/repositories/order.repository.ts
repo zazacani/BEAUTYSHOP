@@ -87,6 +87,7 @@ export class OrderRepository {
   }
 
   async getUserOrdersWithDetails(userId: string) {
+    console.log(`[OrderRepository] Getting orders for user: ${userId}`);
     const userOrders = await db
       .select({
         orderId: orders.id,
@@ -118,6 +119,8 @@ export class OrderRepository {
       .where(eq(orders.userId, userId))
       .orderBy(desc(orders.createdAt));
 
+    console.log(`[OrderRepository] Found ${userOrders.length} order rows`);
+
     const ordersMap = new Map();
     
     userOrders.forEach((row) => {
@@ -141,18 +144,23 @@ export class OrderRepository {
         });
       }
       
-      ordersMap.get(row.orderId).items.push({
-        id: row.itemId,
-        productId: row.productId,
-        quantity: row.quantity,
-        priceAtPurchase: row.priceAtPurchase,
-        productTitleFr: row.productTitleFr,
-        productTitleDe: row.productTitleDe,
-        productTitleEn: row.productTitleEn,
-        productImageUrl: row.productImageUrl,
-      });
+      const order = ordersMap.get(row.orderId);
+      if (order) {
+        order.items.push({
+          id: row.itemId,
+          productId: row.productId,
+          quantity: row.quantity,
+          priceAtPurchase: row.priceAtPurchase,
+          productTitleFr: row.productTitleFr,
+          productTitleDe: row.productTitleDe,
+          productTitleEn: row.productTitleEn,
+          productImageUrl: row.productImageUrl,
+        });
+      }
     });
     
-    return Array.from(ordersMap.values());
+    const result = Array.from(ordersMap.values());
+    console.log(`[OrderRepository] Returning ${result.length} orders`);
+    return result;
   }
 }

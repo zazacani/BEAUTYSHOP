@@ -106,7 +106,7 @@ export class OrderService {
       throw new Error("Order not found");
     }
 
-    const validStatuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
+    const validStatuses = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"];
     if (!validStatuses.includes(status)) {
       throw new Error("Invalid status");
     }

@@ -21,7 +21,7 @@ import { AdminService } from "./services/admin.service";
 import { UserService, updateProfileSchema, changePasswordSchema } from "./services/user.service";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
+  apiVersion: "2025-10-29.clover",
 });
 
 const storage = multer.diskStorage({
@@ -481,13 +481,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Orders routes
   app.get("/api/orders/my-orders", authenticate, async (req: AuthRequest, res) => {
     try {
+      console.log("[my-orders] Route called, req.user:", req.user);
       if (!req.user || !req.user.userId) {
+        console.log("[my-orders] No user or userId, returning 401");
         return res.status(401).json({ error: "Authentication required" });
       }
+      console.log("[my-orders] Calling getUserOrdersWithDetails with userId:", req.user.userId);
       const orders = await orderRepo.getUserOrdersWithDetails(req.user.userId);
+      console.log("[my-orders] Got orders, count:", orders?.length);
       res.json(orders);
     } catch (error: any) {
-      console.error("Get user orders error:", error);
+      console.error("[my-orders] Error:", error);
       res.status(500).json({ error: error.message });
     }
   });
