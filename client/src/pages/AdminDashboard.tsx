@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,9 +49,17 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-serif mb-8" data-testid="text-admin-title">
-          {t("admin.dashboard")}
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-serif" data-testid="text-admin-title">
+            {t("admin.dashboard")}
+          </h1>
+          <Link href="/admin/discounts">
+            <Button variant="outline" data-testid="button-manage-discounts">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Gérer les Codes Promo
+            </Button>
+          </Link>
+        </div>
 
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList>

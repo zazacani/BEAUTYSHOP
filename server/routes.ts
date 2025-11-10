@@ -276,9 +276,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/orders/:id/status", authenticate, requireAdmin, async (req: AuthRequest, res) => {
     try {
       const { status, trackingNumber } = req.body;
+      console.log("[UPDATE STATUS] Order ID:", req.params.id, "Status:", status, "Tracking:", trackingNumber);
       const order = await orderService.updateOrderStatus(req.params.id, status, trackingNumber);
       res.json(order);
     } catch (error: any) {
+      console.error("[UPDATE STATUS ERROR]", error.message);
       if (error.message === "Order not found") {
         return res.status(404).json({ error: error.message });
       }

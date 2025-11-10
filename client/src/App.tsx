@@ -15,6 +15,7 @@ import Register from "@/pages/Register";
 import Support from "@/pages/Support";
 import Legal from "@/pages/Legal";
 import AdminDashboard from "@/pages/AdminDashboard";
+import DiscountManagement from "@/pages/DiscountManagement";
 import Checkout from "@/pages/Checkout";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import MyOrders from "@/pages/MyOrders";
@@ -49,6 +50,7 @@ function Router() {
         <Route path="/support" component={Support} />
         <Route path="/legal" component={Legal} />
         <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/discounts" component={DiscountManagement} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/checkout-success" component={CheckoutSuccess} />
         <Route path="/my-orders" component={MyOrders} />
