@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit, Trash2, Package, TrendingUp, Users, ShoppingCart } from "lucide-react";
-import type { Product, DiscountCode, Order } from "@shared/schema";
+import type { Product, DiscountCode, Order, Brand } from "@shared/schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
 
@@ -232,6 +232,7 @@ function ProductForm({ product, onSuccess }: { product?: Product | null; onSucce
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
+    brandId: product?.brandId ?? null,
     titleFr: product?.titleFr || "",
     titleDe: product?.titleDe || "",
     titleEn: product?.titleEn || "",
@@ -246,6 +247,10 @@ function ProductForm({ product, onSuccess }: { product?: Product | null; onSucce
     altTextFr: product?.altTextFr || "",
     altTextDe: product?.altTextDe || "",
     altTextEn: product?.altTextEn || "",
+  });
+
+  const { data: brands } = useQuery<Brand[]>({
+    queryKey: ["/api/brands"],
   });
 
   const handleImageUpload = async (file: File, imageNumber: 1 | 2) => {
@@ -375,6 +380,26 @@ function ProductForm({ product, onSuccess }: { product?: Product | null; onSucce
                 data-testid="input-desc-en"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="brand">Marque</Label>
+            <Select
+              value={formData.brandId ?? undefined}
+              onValueChange={(value) => setFormData({ ...formData, brandId: value || null })}
+            >
+              <SelectTrigger data-testid="select-brand">
+                <SelectValue placeholder="Sélectionner une marque" />
+              </SelectTrigger>
+              <SelectContent>
+                {brands?.map((brand) => (
+                  <SelectItem key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">MÜE (cheveux & corps) ou NAPPY (cheveux)</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

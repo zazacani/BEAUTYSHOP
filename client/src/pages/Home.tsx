@@ -6,7 +6,7 @@ import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import Footer from "@/components/Footer";
 import SearchDialog from "@/components/SearchDialog";
-import heroImage from "@assets/generated_images/Hero_banner_beauty_image_87edf850.png";
+import heroImage from "@assets/Gemini_Generated_Image_r5qqhyr5qqhyr5qq_1762763605794.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
 import type { Product } from "@shared/schema";
@@ -14,6 +14,7 @@ import type { Product } from "@shared/schema";
 interface ProductWithReviews extends Product {
   ratingAverage: number;
   ratingCount: number;
+  brandName: string | null;
 }
 
 export default function Home() {

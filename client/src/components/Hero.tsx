@@ -10,7 +10,7 @@ interface HeroProps {
 }
 
 export default function Hero({
-  title = "MUE",
+  title = "Müe & Nappy",
   subtitle = "Découvrez notre collection de produits de beauté premium",
   ctaText = "Découvrir la collection",
   ctaLink = "/products",

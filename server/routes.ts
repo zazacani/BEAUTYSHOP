@@ -91,6 +91,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/brands", async (_req, res) => {
+    try {
+      const { db } = await import("./db");
+      const { brands } = await import("@shared/schema");
+      const allBrands = await db.select().from(brands);
+      res.json(allBrands);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/products", async (req, res) => {
     try {
       const { search } = req.query;

@@ -13,6 +13,7 @@ import Footer from "@/components/Footer";
 interface ProductWithReviews extends Product {
   ratingAverage: number;
   ratingCount: number;
+  brandName: string | null;
 }
 
 export default function Products() {

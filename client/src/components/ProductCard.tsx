@@ -9,6 +9,7 @@ interface ProductCardProps {
   product: Product & {
     ratingAverage: number;
     ratingCount: number;
+    brandName: string | null;
   };
   onAddToCart?: () => void;
   onClick?: () => void;
@@ -52,9 +53,16 @@ export default function ProductCard({ product, onAddToCart, onClick }: ProductCa
         />
       </CardHeader>
       <CardContent className="flex-1 p-4">
-        <CardTitle className="mb-1 text-base font-bold cursor-pointer" onClick={onClick} data-testid={`text-product-title-${product.id}`}>
-          {product[titleKey] as string}
-        </CardTitle>
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <CardTitle className="text-base font-bold cursor-pointer flex-1" onClick={onClick} data-testid={`text-product-title-${product.id}`}>
+            {product[titleKey] as string}
+          </CardTitle>
+          {product.brandName && (
+            <Badge variant="secondary" className="text-xs shrink-0" data-testid={`badge-brand-${product.id}`}>
+              {product.brandName}
+            </Badge>
+          )}
+        </div>
         <CardDescription className="line-clamp-2 mb-3 text-xs" data-testid={`text-product-desc-${product.id}`}>
           {product[descKey] as string}
         </CardDescription>

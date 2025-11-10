@@ -24,7 +24,7 @@ export default function Navbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/">
           <h1 className="text-2xl font-serif cursor-pointer" data-testid="link-home">
-            MUE
+            Müe & Nappy
           </h1>
         </Link>
 

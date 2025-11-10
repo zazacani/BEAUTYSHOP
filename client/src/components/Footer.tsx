@@ -10,7 +10,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <h3 className="font-serif text-2xl font-bold mb-4">MUE</h3>
+            <h3 className="font-serif text-2xl font-bold mb-4">Müe & Nappy</h3>
             <p className="text-muted-foreground text-sm">
               {t("footer.tagline")}
             </p>
@@ -50,7 +50,7 @@ export default function Footer() {
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
           <p data-testid="text-copyright">
-            © {currentYear} MUE. {t("footer.copyright")}
+            © {currentYear} Müe & Nappy. {t("footer.copyright")}
           </p>
         </div>
       </div>

@@ -1,10 +1,11 @@
 import { db } from "../db";
-import { products, reviews, type Product, type InsertProduct } from "@shared/schema";
+import { products, reviews, brands, type Product, type InsertProduct } from "@shared/schema";
 import { eq, or, ilike, sql, avg, count } from "drizzle-orm";
 
 export interface ProductWithReviews extends Product {
   ratingAverage: number;
   ratingCount: number;
+  brandName: string | null;
 }
 
 export class ProductRepository {
@@ -17,6 +18,8 @@ export class ProductRepository {
     const result = await db
       .select({
         id: products.id,
+        brandId: products.brandId,
+        brandName: brands.name,
         titleFr: products.titleFr,
         titleDe: products.titleDe,
         titleEn: products.titleEn,
@@ -24,6 +27,7 @@ export class ProductRepository {
         descriptionDe: products.descriptionDe,
         descriptionEn: products.descriptionEn,
         price: products.price,
+        discountPercentage: products.discountPercentage,
         quantityInStock: products.quantityInStock,
         imageUrl1: products.imageUrl1,
         imageUrl2: products.imageUrl2,
@@ -35,8 +39,9 @@ export class ProductRepository {
         ratingCount: sql<number>`COALESCE(COUNT(${reviews.id}), 0)`,
       })
       .from(products)
+      .leftJoin(brands, eq(products.brandId, brands.id))
       .leftJoin(reviews, eq(reviews.productId, products.id))
-      .groupBy(products.id)
+      .groupBy(products.id, brands.id, brands.name)
       .orderBy(sql`${products.createdAt} DESC`);
 
     return result.map((row) => ({
@@ -57,6 +62,8 @@ export class ProductRepository {
     const result = await db
       .select({
         id: products.id,
+        brandId: products.brandId,
+        brandName: brands.name,
         titleFr: products.titleFr,
         titleDe: products.titleDe,
         titleEn: products.titleEn,
@@ -64,6 +71,7 @@ export class ProductRepository {
         descriptionDe: products.descriptionDe,
         descriptionEn: products.descriptionEn,
         price: products.price,
+        discountPercentage: products.discountPercentage,
         quantityInStock: products.quantityInStock,
         imageUrl1: products.imageUrl1,
         imageUrl2: products.imageUrl2,
@@ -75,6 +83,7 @@ export class ProductRepository {
         ratingCount: sql<number>`COALESCE(COUNT(${reviews.id}), 0)`,
       })
       .from(products)
+      .leftJoin(brands, eq(products.brandId, brands.id))
       .leftJoin(reviews, eq(reviews.productId, products.id))
       .where(
         or(
@@ -86,7 +95,7 @@ export class ProductRepository {
           ilike(products.descriptionEn, searchTerm)
         )
       )
-      .groupBy(products.id);
+      .groupBy(products.id, brands.id, brands.name);
 
     return result.map((row) => ({
       ...row,
