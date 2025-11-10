@@ -166,9 +166,13 @@ Preferred communication style: Simple, everyday language.
 - Swiss Post API integration for delivery time calculation
 - Alternative: Manual configuration of delivery estimates
 
-**Payment Gateway (Not Implemented):**
-- Stripe or similar payment processor needed for checkout
-- PCI compliance considerations for payment handling
+**Payment Gateway (Stripe Integration):**
+- Stripe Checkout for secure payment processing
+- Server-side price validation for security
+- CHF currency support for Swiss market
+- Test mode enabled with Stripe test keys
+- Payment success/cancel page redirects
+- Future enhancement: Webhook integration for payment confirmation
 
 ### Key NPM Packages
 
@@ -185,6 +189,7 @@ Preferred communication style: Simple, everyday language.
 - bcryptjs - Password hashing
 - jsonwebtoken - JWT token generation and verification
 - express - Web framework
+- stripe - Payment processing integration (API v2024-06-20)
 
 **Development:**
 - typescript - Type checking
@@ -210,10 +215,13 @@ Preferred communication style: Simple, everyday language.
 **Required:**
 - DATABASE_URL - PostgreSQL connection string
 - JWT_SECRET - Secret key for JWT signing
+- STRIPE_SECRET_KEY - Stripe API secret key for payment processing
+- STRIPE_PUBLIC_KEY - Stripe publishable key for frontend integration
 
 **Optional:**
 - NODE_ENV - Environment mode (development/production)
 - PORT - Server port (defaults to Vite/Express defaults)
+- REPLIT_DEV_DOMAIN - Development domain for Stripe redirects
 
 ### Admin Seeding
 
