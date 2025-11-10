@@ -194,6 +194,7 @@ export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
 export const insertReviewSchema = createInsertSchema(reviews).omit({
   id: true,
   createdAt: true,
+  userId: true,
 }).extend({
   rating: z.number().min(1).max(5),
   comment: z.string().min(10).max(1000).optional(),
