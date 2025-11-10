@@ -83,7 +83,11 @@ export default function DiscountManagement() {
 
   const createDiscount = useMutation({
     mutationFn: async (data: CreateDiscountForm) => {
-      await apiRequest("POST", "/api/discount", data);
+      const payload = {
+        ...data,
+        value: data.value.toString(),
+      };
+      await apiRequest("POST", "/api/discount", payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/discount"] });
