@@ -324,10 +324,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/create-payment-intent", authenticate, async (req: AuthRequest, res) => {
     try {
-      const { items } = req.body;
+      const { items, shippingAddress } = req.body;
 
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ error: "Cart items are required" });
+      }
+
+      if (!shippingAddress || !shippingAddress.firstName || !shippingAddress.lastName || 
+          !shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode) {
+        return res.status(400).json({ error: "Shipping address is required" });
       }
 
       const user = await userRepo.findById(req.user!.userId);
@@ -366,6 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           userId: req.user!.userId,
           items: JSON.stringify(productDetails),
+          shippingAddress: JSON.stringify(shippingAddress),
         },
       });
 
@@ -407,6 +413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const items = JSON.parse(paymentIntent.metadata.items);
+      const shippingAddress = JSON.parse(paymentIntent.metadata.shippingAddress || "{}");
       const totalAmount = (paymentIntent.amount / 100).toFixed(2);
 
       const order = await orderRepo.create({
@@ -415,6 +422,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         discountAmount: "0",
         paymentIntentId,
         status: "CONFIRMED",
+        firstName: shippingAddress.firstName,
+        lastName: shippingAddress.lastName,
+        address: shippingAddress.address,
+        addressLine2: shippingAddress.addressLine2 || null,
+        city: shippingAddress.city,
+        postalCode: shippingAddress.postalCode,
+        country: shippingAddress.country || "CH",
       });
 
       for (const item of items) {

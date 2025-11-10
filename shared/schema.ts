@@ -59,6 +59,13 @@ export const orders = pgTable("orders", {
   paymentIntentId: text("payment_intent_id").unique(),
   status: text("status").notNull().default("PENDING"),
   trackingNumber: text("tracking_number"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  address: text("address"),
+  addressLine2: text("address_line_2"),
+  city: text("city"),
+  postalCode: text("postal_code"),
+  country: text("country"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
