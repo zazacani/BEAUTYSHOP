@@ -354,7 +354,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               currency: "chf",
               product_data: {
                 name: product.titleEn || product.titleFr || product.titleDe || "Product",
-                images: product.imageUrl1 ? [`${baseUrl}${product.imageUrl1}`] : [],
               },
               unit_amount: Math.round(parseFloat(product.price) * 100),
             },
