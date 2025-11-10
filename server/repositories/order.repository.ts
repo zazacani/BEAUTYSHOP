@@ -27,6 +27,15 @@ export class OrderRepository {
     });
   }
 
+  async findByPaymentIntentId(paymentIntentId: string): Promise<Order | undefined> {
+    return await db.query.orders.findFirst({
+      where: eq(orders.paymentIntentId, paymentIntentId),
+      with: {
+        items: true,
+      },
+    });
+  }
+
   async createOrderItem(data: InsertOrderItem): Promise<OrderItem> {
     const [item] = await db.insert(orderItems).values(data).returning();
     return item;

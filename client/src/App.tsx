@@ -15,6 +15,8 @@ import Register from "@/pages/Register";
 import Support from "@/pages/Support";
 import Legal from "@/pages/Legal";
 import AdminDashboard from "@/pages/AdminDashboard";
+import Checkout from "@/pages/Checkout";
+import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PaymentCancel from "@/pages/PaymentCancel";
 import NotFound from "@/pages/not-found";
@@ -48,6 +50,8 @@ function Router() {
         <Route path="/support" component={Support} />
         <Route path="/legal" component={Legal} />
         <Route path="/admin" component={AdminDashboard} />
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/checkout-success" component={CheckoutSuccess} />
         <Route path="/payment-success" component={PaymentSuccess} />
         <Route path="/payment-cancel" component={PaymentCancel} />
         <Route component={NotFound} />

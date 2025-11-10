@@ -56,6 +56,7 @@ export const orders = pgTable("orders", {
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).default("0"),
   discountCodeId: varchar("discount_code_id"),
+  paymentIntentId: text("payment_intent_id").unique(),
   status: text("status").notNull().default("PENDING"),
   trackingNumber: text("tracking_number"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

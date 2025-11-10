@@ -1,12 +1,21 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { X, Plus, Minus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 interface CartItem {
@@ -36,10 +45,12 @@ export default function ShoppingCart({
   onApplyDiscount,
   onCheckout,
 }: ShoppingCartProps) {
+  const [, setLocation] = useLocation();
   const { t } = useLanguage();
   const { user } = useAuth();
   const { toast } = useToast();
   const [discountCode, setDiscountCode] = useState("");
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -48,33 +59,14 @@ export default function ShoppingCart({
   const discount = 0;
   const total = subtotal - discount;
 
-  const checkoutMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/create-checkout-session", { items });
-      return await response.json();
-    },
-    onSuccess: (data: { url: string }) => {
-      window.location.href = data.url;
-    },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to start checkout",
-      });
-    },
-  });
-
   const handleCheckout = () => {
     if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Required",
-        description: "Please login to proceed with checkout",
-      });
+      setShowAuthDialog(true);
       return;
     }
-    checkoutMutation.mutate();
+    
+    onClose();
+    setLocation("/checkout");
   };
 
   if (!isOpen) return null;
@@ -217,14 +209,36 @@ export default function ShoppingCart({
               className="w-full mt-6"
               size="lg"
               onClick={handleCheckout}
-              disabled={checkoutMutation.isPending}
               data-testid="button-checkout"
             >
-              {checkoutMutation.isPending ? "Processing..." : t("cart.checkout")}
+              {t("cart.checkout")}
             </Button>
           </div>
         )}
       </div>
+
+      <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("cart.authRequired")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("cart.pleaseLogin")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowAuthDialog(false);
+                onClose();
+                setLocation("/");
+              }}
+            >
+              {t("common.login")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -322,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/create-checkout-session", authenticate, async (req: AuthRequest, res) => {
+  app.post("/api/create-payment-intent", authenticate, async (req: AuthRequest, res) => {
     try {
       const { items } = req.body;
 
@@ -335,11 +335,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "User not found" });
       }
 
-      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : 'http://localhost:5000';
-
-      const lineItems = await Promise.all(
+      let totalAmount = 0;
+      const productDetails = await Promise.all(
         items.map(async (item: { id: string; quantity: number }) => {
           const product = await productRepo.findById(item.id);
           if (!product) {
@@ -349,31 +346,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
             throw new Error(`Invalid quantity for product: ${item.id}`);
           }
 
+          const itemTotal = parseFloat(product.price) * item.quantity;
+          totalAmount += itemTotal;
+
           return {
-            price_data: {
-              currency: "chf",
-              product_data: {
-                name: product.titleEn || product.titleFr || product.titleDe || "Product",
-              },
-              unit_amount: Math.round(parseFloat(product.price) * 100),
-            },
+            productId: product.id,
             quantity: item.quantity,
+            priceAtPurchase: product.price,
           };
         })
       );
 
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        mode: "payment",
-        line_items: lineItems,
-        success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/payment-cancel`,
-        customer_email: user.email,
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(totalAmount * 100),
+        currency: "chf",
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        metadata: {
+          userId: req.user!.userId,
+          items: JSON.stringify(productDetails),
+        },
       });
 
-      res.json({ url: session.url });
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        totalAmount: totalAmount.toFixed(2),
+      });
     } catch (error: any) {
-      console.error("Stripe checkout error:", error);
+      console.error("Stripe payment intent error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/confirm-order", authenticate, async (req: AuthRequest, res) => {
+    try {
+      const { paymentIntentId } = req.body;
+
+      if (!paymentIntentId) {
+        return res.status(400).json({ error: "Payment intent ID is required" });
+      }
+
+      const existingOrder = await orderRepo.findByPaymentIntentId(paymentIntentId);
+      if (existingOrder) {
+        return res.json({ 
+          success: true,
+          orderId: existingOrder.id,
+          message: "Order already exists",
+        });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      if (paymentIntent.status !== "succeeded") {
+        return res.status(400).json({ error: "Payment not completed" });
+      }
+
+      if (paymentIntent.metadata.userId !== req.user!.userId) {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      const items = JSON.parse(paymentIntent.metadata.items);
+      const totalAmount = (paymentIntent.amount / 100).toFixed(2);
+
+      const order = await orderRepo.create({
+        userId: req.user!.userId,
+        totalAmount,
+        discountAmount: "0",
+        paymentIntentId,
+        status: "CONFIRMED",
+      });
+
+      for (const item of items) {
+        await orderRepo.createOrderItem({
+          orderId: order.id,
+          productId: item.productId,
+          quantity: item.quantity,
+          priceAtPurchase: item.priceAtPurchase,
+        });
+      }
+
+      res.json({ 
+        success: true,
+        orderId: order.id,
+      });
+    } catch (error: any) {
+      console.error("Confirm order error:", error);
       res.status(500).json({ error: error.message });
     }
   });
