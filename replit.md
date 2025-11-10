@@ -1,8 +1,12 @@
-# Beauté Suisse E-Commerce Platform
+# Müe & Nappy E-Commerce Platform
 
 ## Overview
 
-Beauté Suisse is a modern, multilingual e-commerce platform for selling beauty products in the Swiss market. The application supports three languages (French, German, and English) and provides a complete online shopping experience with admin management capabilities.
+Müe & Nappy is a modern, multilingual e-commerce platform for selling premium beauty products in the Swiss market. The platform features two distinct brands:
+- **MÜE**: Hair and body care products (produits cheveux & corps)
+- **NAPPY**: Hair care products (produits cheveux)
+
+The application supports three languages (French, German, and English) and provides a complete online shopping experience with admin management capabilities.
 
 The platform features a clean, minimalist design inspired by premium beauty retailers like Sephora and Aesop, with a focus on product-first presentation and user experience.
 
@@ -76,7 +80,8 @@ Preferred communication style: Simple, everyday language.
 
 **Schema Design:**
 - users: User accounts with role-based access
-- products: Multilingual product catalog (titleFr/De/En, descriptionFr/De/En)
+- brands: Product brands (MÜE and NAPPY) with unique names
+- products: Multilingual product catalog (titleFr/De/En, descriptionFr/De/En) with nullable brandId FK
 - discountCodes: Single-use and multi-use discount codes
 - orders: Order records with status tracking
 - orderItems: Line items for each order
@@ -87,6 +92,7 @@ Preferred communication style: Simple, everyday language.
 - Decimal precision for monetary values (10,2)
 - Foreign key relationships with referential integrity
 - Indexes on frequently queried fields (email, code)
+- Brand system with nullable FK (products can exist without brand assignment)
 
 ### Authentication & Security
 

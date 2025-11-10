@@ -20,7 +20,7 @@ const translations = {
     "nav.admin": "Administration",
     
     // Home
-    "home.title": "MUE",
+    "home.title": "Müe & Nappy",
     "home.subtitle": "Découvrez notre collection de produits de beauté premium",
     "home.cta": "Découvrir la collection",
     
@@ -150,7 +150,7 @@ const translations = {
     "nav.admin": "Verwaltung",
     
     // Home
-    "home.title": "MUE",
+    "home.title": "Müe & Nappy",
     "home.subtitle": "Entdecken Sie unsere Premium-Schönheitsprodukte",
     "home.cta": "Kollektion entdecken",
     
@@ -280,7 +280,7 @@ const translations = {
     "nav.admin": "Admin",
     
     // Home
-    "home.title": "MUE",
+    "home.title": "Müe & Nappy",
     "home.subtitle": "Discover our premium beauty products collection",
     "home.cta": "Discover the collection",
     

@@ -16,6 +16,18 @@ export default function Hero({
   ctaLink = "/products",
   backgroundImage,
 }: HeroProps) {
+  const isHashLink = ctaLink.startsWith("#");
+
+  const handleClick = () => {
+    if (isHashLink) {
+      const targetId = ctaLink.substring(1);
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   return (
     <div className="relative h-96 md:h-screen w-full overflow-hidden">
       {backgroundImage && (
@@ -42,16 +54,28 @@ export default function Hero({
           >
             {subtitle}
           </p>
-          <Link href={ctaLink}>
+          {isHashLink ? (
             <Button
               size="lg"
               variant="default"
               className="backdrop-blur-md bg-primary hover:bg-primary/90 text-xl px-8 py-6"
               data-testid="button-hero-cta"
+              onClick={handleClick}
             >
               {ctaText}
             </Button>
-          </Link>
+          ) : (
+            <Link href={ctaLink}>
+              <Button
+                size="lg"
+                variant="default"
+                className="backdrop-blur-md bg-primary hover:bg-primary/90 text-xl px-8 py-6"
+                data-testid="button-hero-cta"
+              >
+                {ctaText}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>
