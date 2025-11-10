@@ -8,13 +8,15 @@ import { ProductService } from "./services/product.service";
 import { DiscountService } from "./services/discount.service";
 import { OrderService } from "./services/order.service";
 import { SettingsService } from "./services/settings.service";
+import { ReviewService } from "./services/review.service";
 import { UserRepository } from "./repositories/user.repository";
 import { ProductRepository } from "./repositories/product.repository";
 import { DiscountRepository } from "./repositories/discount.repository";
 import { OrderRepository } from "./repositories/order.repository";
 import { SettingsRepository } from "./repositories/settings.repository";
+import { ReviewRepository } from "./repositories/review.repository";
 import { authenticate, requireAdmin, type AuthRequest } from "./middleware/auth.middleware";
-import { insertUserSchema, insertProductSchema, insertDiscountCodeSchema, insertSiteSettingsSchema } from "@shared/schema";
+import { insertUserSchema, insertProductSchema, insertDiscountCodeSchema, insertSiteSettingsSchema, insertReviewSchema } from "@shared/schema";
 import { AdminService } from "./services/admin.service";
 import { UserService, updateProfileSchema, changePasswordSchema } from "./services/user.service";
 
@@ -53,6 +55,7 @@ const productRepo = new ProductRepository();
 const discountRepo = new DiscountRepository();
 const orderRepo = new OrderRepository();
 const settingsRepo = new SettingsRepository();
+const reviewRepo = new ReviewRepository();
 
 const authService = new AuthService(userRepo);
 const productService = new ProductService(productRepo);
@@ -61,6 +64,7 @@ const orderService = new OrderService(orderRepo, productRepo, discountService);
 const adminService = new AdminService();
 const userService = new UserService(userRepo);
 const settingsService = new SettingsService(settingsRepo);
+const reviewService = new ReviewService(reviewRepo);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -447,6 +451,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Confirm order error:", error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Orders routes
+  app.get("/api/orders/my-orders", authenticate, async (req: AuthRequest, res) => {
+    try {
+      const orders = await orderRepo.getUserOrdersWithDetails(req.user!.userId);
+      res.json(orders);
+    } catch (error: any) {
+      console.error("Get user orders error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Reviews routes
+  app.get("/api/reviews/:productId", async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const result = await reviewService.getProductReviews(productId);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Get reviews error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/reviews", authenticate, async (req: AuthRequest, res) => {
+    try {
+      const data = insertReviewSchema.parse(req.body);
+      const review = await reviewService.createReview(req.user!.userId, data);
+      res.json(review);
+    } catch (error: any) {
+      console.error("Create review error:", error);
+      res.status(400).json({ error: error.message });
     }
   });
 

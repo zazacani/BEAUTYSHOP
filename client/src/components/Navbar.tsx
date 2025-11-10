@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingCart, User, LogOut, Shield } from "lucide-react";
+import { ShoppingCart, User, LogOut, Shield, Package } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,6 +91,10 @@ export default function Navbar() {
                   <p className="text-xs text-muted-foreground" data-testid="text-user-email">{user.email}</p>
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setLocation("/my-orders")} data-testid="link-my-orders">
+                  <Package className="mr-2 w-4 h-4" />
+                  {t("myOrders.title")}
+                </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => setLocation("/admin")} data-testid="link-admin">
                     <Shield className="mr-2 w-4 h-4" />

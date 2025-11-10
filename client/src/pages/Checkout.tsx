@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
@@ -94,6 +95,7 @@ export default function Checkout() {
     appearance: {
       theme: 'stripe' as const,
     },
+    payment_method_save: 'disabled' as const,
   };
 
   return (
@@ -186,12 +188,36 @@ export default function Checkout() {
 
                 <div className="space-y-2">
                   <Label htmlFor="country">{t("checkout.country")}</Label>
-                  <Input
-                    id="country"
-                    value="Suisse / Switzerland"
-                    disabled
-                    data-testid="input-country"
-                  />
+                  <Select
+                    value={shippingAddress.country}
+                    onValueChange={(value) => setShippingAddress({ ...shippingAddress, country: value })}
+                    disabled={showPayment}
+                  >
+                    <SelectTrigger id="country" data-testid="select-country">
+                      <SelectValue placeholder={t("checkout.selectCountry")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CH">🇨🇭 Suisse / Schweiz / Switzerland</SelectItem>
+                      <SelectItem value="FR">🇫🇷 France</SelectItem>
+                      <SelectItem value="DE">🇩🇪 Deutschland / Germany</SelectItem>
+                      <SelectItem value="IT">🇮🇹 Italia / Italy</SelectItem>
+                      <SelectItem value="AT">🇦🇹 Österreich / Austria</SelectItem>
+                      <SelectItem value="BE">🇧🇪 Belgique / België / Belgium</SelectItem>
+                      <SelectItem value="LU">🇱🇺 Luxembourg</SelectItem>
+                      <SelectItem value="NL">🇳🇱 Nederland / Netherlands</SelectItem>
+                      <SelectItem value="ES">🇪🇸 España / Spain</SelectItem>
+                      <SelectItem value="PT">🇵🇹 Portugal</SelectItem>
+                      <SelectItem value="GB">🇬🇧 United Kingdom</SelectItem>
+                      <SelectItem value="IE">🇮🇪 Ireland</SelectItem>
+                      <SelectItem value="SE">🇸🇪 Sverige / Sweden</SelectItem>
+                      <SelectItem value="NO">🇳🇴 Norge / Norway</SelectItem>
+                      <SelectItem value="DK">🇩🇰 Danmark / Denmark</SelectItem>
+                      <SelectItem value="FI">🇫🇮 Suomi / Finland</SelectItem>
+                      <SelectItem value="PL">🇵🇱 Polska / Poland</SelectItem>
+                      <SelectItem value="CZ">🇨🇿 Česko / Czech Republic</SelectItem>
+                      <SelectItem value="OTHER">🌍 {t("checkout.otherCountry")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {error && (

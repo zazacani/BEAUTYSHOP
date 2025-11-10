@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { orders, orderItems, users, type Order, type InsertOrder, type OrderItem, type InsertOrderItem } from "@shared/schema";
+import { orders, orderItems, users, products, type Order, type InsertOrder, type OrderItem, type InsertOrderItem } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 
 export class OrderRepository {
@@ -68,6 +68,14 @@ export class OrderRepository {
         trackingNumber: orders.trackingNumber,
         createdAt: orders.createdAt,
         updatedAt: orders.updatedAt,
+        paymentIntentId: orders.paymentIntentId,
+        firstName: orders.firstName,
+        lastName: orders.lastName,
+        address: orders.address,
+        addressLine2: orders.addressLine2,
+        city: orders.city,
+        postalCode: orders.postalCode,
+        country: orders.country,
         userName: users.name,
         userEmail: users.email,
       })
@@ -76,5 +84,75 @@ export class OrderRepository {
       .orderBy(desc(orders.createdAt));
     
     return result as (Order & { userName: string; userEmail: string })[];
+  }
+
+  async getUserOrdersWithDetails(userId: string) {
+    const userOrders = await db
+      .select({
+        orderId: orders.id,
+        totalAmount: orders.totalAmount,
+        discountAmount: orders.discountAmount,
+        status: orders.status,
+        trackingNumber: orders.trackingNumber,
+        createdAt: orders.createdAt,
+        paymentIntentId: orders.paymentIntentId,
+        firstName: orders.firstName,
+        lastName: orders.lastName,
+        address: orders.address,
+        addressLine2: orders.addressLine2,
+        city: orders.city,
+        postalCode: orders.postalCode,
+        country: orders.country,
+        itemId: orderItems.id,
+        productId: orderItems.productId,
+        quantity: orderItems.quantity,
+        priceAtPurchase: orderItems.priceAtPurchase,
+        productTitleFr: products.titleFr,
+        productTitleDe: products.titleDe,
+        productTitleEn: products.titleEn,
+        productImageUrl: products.imageUrl1,
+      })
+      .from(orders)
+      .innerJoin(orderItems, eq(orderItems.orderId, orders.id))
+      .innerJoin(products, eq(products.id, orderItems.productId))
+      .where(eq(orders.userId, userId))
+      .orderBy(desc(orders.createdAt));
+
+    const ordersMap = new Map();
+    
+    userOrders.forEach((row) => {
+      if (!ordersMap.has(row.orderId)) {
+        ordersMap.set(row.orderId, {
+          id: row.orderId,
+          totalAmount: row.totalAmount,
+          discountAmount: row.discountAmount,
+          status: row.status,
+          trackingNumber: row.trackingNumber,
+          createdAt: row.createdAt,
+          paymentIntentId: row.paymentIntentId,
+          firstName: row.firstName,
+          lastName: row.lastName,
+          address: row.address,
+          addressLine2: row.addressLine2,
+          city: row.city,
+          postalCode: row.postalCode,
+          country: row.country,
+          items: [],
+        });
+      }
+      
+      ordersMap.get(row.orderId).items.push({
+        id: row.itemId,
+        productId: row.productId,
+        quantity: row.quantity,
+        priceAtPurchase: row.priceAtPurchase,
+        productTitleFr: row.productTitleFr,
+        productTitleDe: row.productTitleDe,
+        productTitleEn: row.productTitleEn,
+        productImageUrl: row.productImageUrl,
+      });
+    });
+    
+    return Array.from(ordersMap.values());
   }
 }

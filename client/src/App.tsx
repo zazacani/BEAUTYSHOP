@@ -17,6 +17,7 @@ import Legal from "@/pages/Legal";
 import AdminDashboard from "@/pages/AdminDashboard";
 import Checkout from "@/pages/Checkout";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
+import MyOrders from "@/pages/MyOrders";
 import NotFound from "@/pages/not-found";
 
 function GlobalCart() {
@@ -50,6 +51,7 @@ function Router() {
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/checkout-success" component={CheckoutSuccess} />
+        <Route path="/my-orders" component={MyOrders} />
         <Route component={NotFound} />
       </Switch>
       <GlobalCart />
