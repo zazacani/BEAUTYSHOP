@@ -10,6 +10,13 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   role: text("role").notNull().default("USER"),
   stripeCustomerId: varchar("stripe_customer_id").unique(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  address: text("address"),
+  addressLine2: text("address_line_2"),
+  city: text("city"),
+  postalCode: text("postal_code"),
+  country: text("country").default("CH"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

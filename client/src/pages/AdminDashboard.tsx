@@ -635,6 +635,7 @@ function OrdersTab() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "PENDING": return "En attente";
+      case "CONFIRMED": return "Confirmée";
       case "PROCESSING": return "En traitement";
       case "SHIPPED": return "Expédiée";
       case "DELIVERED": return "Livrée";
@@ -655,6 +656,7 @@ function OrdersTab() {
             <SelectContent>
               <SelectItem value="ALL">Tous les statuts</SelectItem>
               <SelectItem value="PENDING">En attente</SelectItem>
+              <SelectItem value="CONFIRMED">Confirmée</SelectItem>
               <SelectItem value="PROCESSING">En traitement</SelectItem>
               <SelectItem value="SHIPPED">Expédiée</SelectItem>
               <SelectItem value="DELIVERED">Livrée</SelectItem>
@@ -693,6 +695,16 @@ function OrdersTab() {
                       <div>Créée: {new Date(order.createdAt).toLocaleDateString()}</div>
                       <div>Mise à jour: {new Date(order.updatedAt).toLocaleDateString()}</div>
                       {order.trackingNumber && <div>Suivi: {order.trackingNumber}</div>}
+                      {order.firstName && order.lastName && (
+                        <div className="mt-2 pt-2 border-t">
+                          <div className="font-semibold">Adresse de livraison:</div>
+                          <div>{order.firstName} {order.lastName}</div>
+                          <div>{order.address}</div>
+                          {order.addressLine2 && <div>{order.addressLine2}</div>}
+                          <div>{order.postalCode} {order.city}</div>
+                          <div>{order.country}</div>
+                        </div>
+                      )}
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
@@ -735,6 +747,7 @@ function OrdersTab() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="PENDING">En attente</SelectItem>
+                            <SelectItem value="CONFIRMED">Confirmée</SelectItem>
                             <SelectItem value="PROCESSING">En traitement</SelectItem>
                             <SelectItem value="SHIPPED">Expédiée</SelectItem>
                             <SelectItem value="DELIVERED">Livrée</SelectItem>

@@ -241,6 +241,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/orders/my-orders", authenticate, async (req: AuthRequest, res) => {
+    try {
+      console.log("[my-orders] Route called, req.user:", req.user);
+      if (!req.user || !req.user.userId) {
+        console.log("[my-orders] No user or userId, returning 401");
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      console.log("[my-orders] Calling getUserOrdersWithDetails with userId:", req.user.userId);
+      const orders = await orderRepo.getUserOrdersWithDetails(req.user.userId);
+      console.log("[my-orders] Got orders, count:", orders?.length);
+      res.json(orders);
+    } catch (error: any) {
+      console.error("[my-orders] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/orders/:id", authenticate, async (req: AuthRequest, res) => {
     try {
       const order = await orderService.getOrderById(req.params.id);
@@ -474,24 +491,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error("Confirm order error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Orders routes
-  app.get("/api/orders/my-orders", authenticate, async (req: AuthRequest, res) => {
-    try {
-      console.log("[my-orders] Route called, req.user:", req.user);
-      if (!req.user || !req.user.userId) {
-        console.log("[my-orders] No user or userId, returning 401");
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      console.log("[my-orders] Calling getUserOrdersWithDetails with userId:", req.user.userId);
-      const orders = await orderRepo.getUserOrdersWithDetails(req.user.userId);
-      console.log("[my-orders] Got orders, count:", orders?.length);
-      res.json(orders);
-    } catch (error: any) {
-      console.error("[my-orders] Error:", error);
       res.status(500).json({ error: error.message });
     }
   });
