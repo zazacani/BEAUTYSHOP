@@ -12,8 +12,16 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const brands = pgTable("brands", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const products = pgTable("products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  brandId: varchar("brand_id").references(() => brands.id),
   titleFr: text("title_fr").notNull(),
   titleDe: text("title_de").notNull(),
   titleEn: text("title_en").notNull(),
@@ -82,6 +90,11 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
 });
 
+export const insertBrandSchema = createInsertSchema(brands).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   createdAt: true,
@@ -114,6 +127,8 @@ export const insertSiteSettingsSchema = createInsertSchema(siteSettings).omit({
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Brand = typeof brands.$inferSelect;
+export type InsertBrand = z.infer<typeof insertBrandSchema>;
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type DiscountCode = typeof discountCodes.$inferSelect;
