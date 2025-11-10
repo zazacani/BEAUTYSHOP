@@ -1,6 +1,6 @@
 import { db } from "../db";
 import { orders, orderItems, users, products, type Order, type InsertOrder, type OrderItem, type InsertOrderItem } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 export class OrderRepository {
   async create(data: InsertOrder): Promise<Order> {
@@ -41,19 +41,20 @@ export class OrderRepository {
   async updateStatus(id: string, status: string, trackingNumber?: string): Promise<Order | undefined> {
     const updateData: any = { 
       status,
-      updatedAt: new Date()
+      updatedAt: sql`NOW()`
     };
     
     if (trackingNumber !== undefined) {
       updateData.trackingNumber = trackingNumber;
     }
 
-    const [updated] = await db
+    await db
       .update(orders)
       .set(updateData)
-      .where(eq(orders.id, id))
-      .returning();
-    return updated;
+      .where(eq(orders.id, id));
+    
+    // Fetch and return the updated order
+    return this.findById(id);
   }
 
   async findAllWithUserInfo(): Promise<(Order & { userName: string; userEmail: string })[]> {
